@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical History Records</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #c9d6ff, #e2e2e2);
+      margin: 0;
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #87ceeb;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #00b894;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: #019875;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    th, td {
+      border: 1px solid #eee;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #74b9ff;
+      color: #fff;
+    }
+
+    td[contenteditable] {
+      background-color: #f1f8ff;
+    }
+
+    .delete-btn {
+      background-color: #d63031;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+  <h2> Medical History Records</h2>
+
+  <form id="recordForm">
+    <label>Patient Name:
+      <input type="text" id="name" required>
+    </label>
+    <label>Condition:
+      <input type="text" id="condition" required>
+    </label>
+    <label>Treatment:
+      <textarea id="treatment" rows="3" required></textarea>
+    </label>
+    <button type="submit"> Add Record</button>
+  </form>
+
+  <table id="recordsTable">
+    <thead>
+      <tr>
+        <th> Patient Name</th>
+        <th> Condition</th>
+        <th> Treatment</th>
+        <th> Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById('recordForm');
+    const table = document.getElementById('recordsTable').getElementsByTagName('tbody')[0];
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const condition = document.getElementById('condition').value.trim();
+      const treatment = document.getElementById('treatment').value.trim();
+      if (name && condition && treatment) {
+        addRecord(name, condition, treatment);
+        form.reset();
+      }
+    });
+
+    function addRecord(name, condition, treatment) {
+      const row = table.insertRow();
+      row.innerHTML = `
+        <td contenteditable="true">${name}</td>
+        <td contenteditable="true">${condition}</td>
+        <td contenteditable="true">${treatment}</td>
+        <td><button class="delete-btn" onclick="deleteRecord(this)">🗑 Delete</button></td>
+      `;
+    }
+
+    function deleteRecord(btn) {
+      const row = btn.closest('tr');
+      row.remove();
+    }
+  </script>
+</body>
+</html>
