@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content#="width=device-width,initial-scale=1.0"/>
+<title>Doctor Dashboard -University Medical Center</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!--Header-->
+    <header class="bg-blue-900 text-white p-4">
+        
+        <div class="myDiv">
+            <img src="image.png" class ="logo" alt="Logo">
+        
+        <div class="text">
+
+             <h1>Medical Center - Doctor Dashboard </h1>
+             <h2>University Of Ruhuna</h2>
+            
+         </div>
+        </div>
+    </header>
+    <section class="bg-white rounded-lg shadow p-4"></section>
+    
+
+
+    <nav class="navbar">
+  
+  
+  <div class="doctor-info">
+    
+    <img src="doctorphoto.png" alt="Doctor Photo">
+    <span class="name">Dr jane smith</span>
+  </div>
+  <div class="search-bar">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" placeholder="Search here">
+  </div>
+  
+  <div class="button" onclick="Home">
+  <button class="home">
+<img src="https://img.icons8.com/?size=100&id=jPDM9Pv61iP5&format=png&color=000000" alt="Home Photo" class = "Home">
+  </button>
+    </div>
+<div class="button" onclick="logout">
+  <button class="logout-btn">
+    <img src="https://img.icons8.com/?size=100&id=arrojWw9F5j5&format=png&color=000000" alt="Log Photo" class = "Log">
+  </button>
+</div>
+</nav>
+<div class="searchsection">
+  <h2>Search Patient</h2>
+
+<div class="searchpatient">
+
+  <input type="text" id = "search" placeholder="Enter Register Number">
+  <button onclick="searchPatient()">Search</button>
+</div>
+</div>
+
+<div class ="patient-container"  class = "hidden">
+  <h2>Patient Information</h2>
+  <p><strong>Name:</strong><span id="name">-</span></p>
+  <p><strong>Age:</strong><span id="age">-</span></p>
+  <p><strong>Allergies:</strong><span id="allergies">-</span></p>
+  <p><strong>Chronic disease</strong><span id="chronic">-</span></p>
+  
+</div>
+  <div class = "p-container">
+    <h2>Prescription</h2>
+    
+    <table class = "Prescription-table">
+      <thead>
+      <tr>
+        <th>Medicine name</th>
+        <th>Dosage</th>
+        <th>Frequency</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+      <td>tggf</td>
+      <td>ghgh</td>
+      <td>ghg</td>
+
+    </tr>
+    </tbody>
+    </table>
+    <button onclick = "addRow()" class ="add-row-button">Add Row</button>
+    <textarea placeholder="Notes" class = "prescription-notes"></textarea>
+    <button class="pdf-btn">Generate PDF</button>
+
+  </div>
+
+
+  
+  
+
+</div>
+</body>
+</html>
