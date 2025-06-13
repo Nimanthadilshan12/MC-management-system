@@ -2,7 +2,7 @@
 $host = "localhost";
 $db = "mc";
 $user = "root";
-$pass = ""; // set your DB password
+$pass = ""; 
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
@@ -11,12 +11,50 @@ $message = "";
 $showForm = "signin";
 
 if (isset($_POST['register'])) {
-    $username = $_POST['username'];
+    $username = $_POST['UserID'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = $_POST['role'];
+    $name = $_POST['Fullname'];
+    $email = $_POST['Email'];
+    $age = $_POST['Age'];
+    $gender = $_POST['Gender'];
+    $bday = $_POST['Birth'];
+    $blood = $_POST['Blood_Type'];
+    $year = $_POST['Academic_Year'];
+    $faculty = $_POST['Faculty'];
+    $citizen = $_POST['Citizenship'];
+    $contact = $_POST['Contact_No:'];
+    $allergy = $_POST['Any_allergies'];
+    $econtact = $_POST['Emergency_Contact'];
 
-    $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $username, $password, $role);
+    // Prepare SQL with all fields
+    $stmt = $conn->prepare("
+        INSERT INTO users (
+            username, password, role, name, email, age, gender, bday,
+            blood, year, faculty, citizen, contact,
+            allergy, econtact
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+
+    // Bind all variables
+    $stmt->bind_param(
+        "ssssssissssssss",  // Data types: s=string, i=integer
+        $username,
+        $password,
+        $role,
+        $name,
+        $email,
+        $age,
+        $gender,
+        $bday,
+        $blood,
+        $year,
+        $faculty,
+        $citizen,
+        $contact,
+        $allergy,
+        $econtact
+    );
 
     if ($stmt->execute()) {
         $message = "Registration successful. Please sign in.";
@@ -29,6 +67,7 @@ if (isset($_POST['register'])) {
     $stmt->close();
 }
 
+
 if (isset($_POST['signin'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -40,10 +79,29 @@ if (isset($_POST['signin'])) {
     
     if ($user = $result->fetch_assoc()) {
         if (password_verify($password, $user['password'])) {
-            // Redirect based on role
-            header("Location: dashboard.php?role=" . $user['role']);
-            exit();
-        } else {
+    session_start();
+    $_SESSION['username'] = $user['username'];
+    $_SESSION['role'] = $user['role'];
+
+    switch ($user['role']) {
+        case 'Doctor':
+            header("Location: doctor_dashboard.php");
+            break;
+        case 'Patient':
+            header("Location: patient_dashboard.php");
+            break;
+        case 'Pharmacist':
+            header("Location: pharmacist_dashboard.php");
+            break;
+        case 'Admin':
+            header("Location: admin_dashboard.php");
+            break;
+        default:
+            header("Location: dashboard.php");
+    }
+    exit();
+}
+ else {
             $message = "Invalid login.";
         }
     } else {
@@ -157,18 +215,53 @@ if (isset($_POST['signin'])) {
 
         
         <form id="registerForm" method="post">
-            <h3>Create Account</h3>
-            <input type="text" name="username" placeholder="Enter Username" required>
-            <input type="password" name="password" placeholder="Enter Password (min 6 chars)" required>
-            <select name="role" required>
-                <option value="">Select Role</option>
-                <option value="Patient">Patient</option>
-                <option value="Doctor">Doctor</option>
-                <option value="Admin">Admin</option>
-                <option value="Pharmacist">Pharmacist</option>
-            </select>
-            <button type="submit" name="register">Register</button>
-        </form>
+    <h3>Create Account</h3>
+
+    <input type="text" name="UserID" placeholder="Enter UserID" required>
+    <input type="password" name="password" placeholder="Enter Password (min 6 chars)" required>
+
+    <select name="role" required>
+        <option value="">Select Role</option>
+        <option value="Patient">Patient</option>
+        <option value="Doctor">Doctor</option>
+        <option value="Admin">Admin</option>
+        <option value="Pharmacist">Pharmacist</option>
+    </select>
+
+    <input type="text" name="Fullname" placeholder="Full Name" required>
+    <input type="email" name="Email" placeholder="Email Address" required>
+    <input type="number" name="Age" placeholder="Age" min="0" required>
+
+    <select name="Gender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+
+    <label>Birthdate:</label>
+    <input type="date" name="Birth" required>
+
+    <select name="Blood_Type" required>
+        <option value="">Select Blood Type</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+    </select>
+
+    <input type="text" name="Academic_Year" placeholder="Academic Year (e.g. 2nd Year)" >
+    <input type="text" name="Faculty" placeholder="Faculty (e.g. Medicine)" required>
+    <input type="text" name="Citizenship" placeholder="Citizenship" required>
+    <input type="text" name="Contact_No:" placeholder="Contact Number" required>
+    <textarea name="Any_allergies" placeholder="Any allergies (if any)"></textarea>
+    <input type="text" name="Emergency_Contact" placeholder="Emergency Contact Number" required>
+
+    <button type="submit" name="register">Register</button>
+</form>
 
         
         <form id="signinForm" method="post">
