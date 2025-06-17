@@ -65,35 +65,105 @@
   <p><strong>Age:</strong><span id="age">-</span></p>
   <p><strong>Allergies:</strong><span id="allergies">-</span></p>
   <p><strong>Chronic disease</strong><span id="chronic">-</span></p>
-  
+  <button>View Patient History</button>
 </div>
+
+  <script>
+    // Delay function to avoid firing on every keystroke
+    let debounceTimer;
+    document.getElementById('regNumber').addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+
+      const reg = this.value.trim();
+      if (reg.length === 0) return;
+
+      debounceTimer = setTimeout(() => {
+        fetch(`/get-patient?reg=${encodeURIComponent(reg)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              document.getElementById("name").textContent = data.name;
+              document.getElementById("age").textContent = data.age;
+              document.getElementById("allergies").textContent = data.allergies;
+              document.getElementById("chronic").textContent = data.chronic;
+              document.getElementById("patientContainer").classList.remove("hidden");
+            } else {
+              document.getElementById("patientContainer").classList.add("hidden");
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err);
+            document.getElementById("patientContainer").classList.add("hidden");
+          });
+      }, 500); // wait 500ms after user stops typing
+    });
+  </script>
   <div class = "p-container">
     <h2>Prescription</h2>
     
-    <table class = "Prescription-table">
-      <thead>
-      <tr>
-        <th>Medicine name</th>
-        <th>Dosage</th>
-        <th>Frequency</th>
-        
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-      <td>tggf</td>
-      <td>ghgh</td>
-      <td>ghg</td>
-
+ <table class="Prescription-table">
+  <thead>
+    <tr>
+      <th>Medicine name</th>
+      <th>Dosage</th>
+      <th>Frequency</th>
     </tr>
-    </tbody>
-    </table>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <select id="medicine-select"></select>
+      </td>
+      <td><input type="text" name="dosage" /></td>
+      <td><input type="text" name="frequency" /></td>
+    </tr>
+  </tbody>
+</table>
+<script>
+  // Fetch medicines from backend API
+  fetch('get_medicines.php')
+    .then(response => response.json())
+    .then(data => {
+      const select = document.getElementById('medicine-select');
+      data.forEach(medicine => {
+        const option = document.createElement('option');
+        option.value = medicine.name;
+        option.text = medicine.name;
+        select.add(option);
+      });
+    })
+    .catch(error => console.error('Error fetching medicines:', error));
+</script>
     <button onclick = "addRow()" class ="add-row-button">Add Row</button>
     <textarea placeholder="Notes" class = "prescription-notes"></textarea>
     <button class="pdf-btn">Generate PDF</button>
-
+    <button class="upload">Upload PDF Patient</button>
   </div>
 
+  <div class = "emergency">
+    <h2>Emergency</h2>
+    <form method="POST" action="imergency.php">
+      <input type="hidden" name="patient_id" value="<?= $patient['id']?>">
+      <button class="imergency-btn" type="submit" name="send_emergency_email" style="background:rgb(0, 0, 0);color:white;">
+      Send Emergency Email
+    </button>
+  </form>
+  
+
+  <h2>Today's Date:</h2>
+  <p id="date"></p>
+
+  <script>
+    // Get today's date
+    const today = new Date();
+    
+    // Format the date (e.g., "June 11, 2025")
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById("date").innerText = today.toLocaleDateString(undefined, options);
+  </script>
+
+
+    
 
   
   
