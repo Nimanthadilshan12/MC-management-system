@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Center - Doctor Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+        }
+
+        body.darkmode{
+            --primary-color: #3d98d4;
+            --secondary-color: #2e8853;
+            --dark-color: #191d21;
+            --light-color: #021f26;
+            --danger-color: #e74c3c;
+            --warning-color: #644616;
+            background-color: #070808;
+            color:white;
+
+        }
+
+        body.darkmode .card,
+body.darkmode .form-control,
+body.darkmode .form-select,
+body.darkmode .dropdown-menu,
+body.darkmode .list-group-item,
+body.darkmode .table,
+body.darkmode .modal-content {
+    background-color: #1e1e1e;
+    color: white;
+    border-color: #444;
+}
+
+body.darkmode .form-control::placeholder,
+body.darkmode .form-select,
+body.darkmode .text-muted {
+    color: #ccc;
+}
+
+body.darkmode .card-header {
+    background-color: #2a2a2a;
+    border-bottom-color: #444;
+}
+
+body.darkmode .list-group-item {
+    background-color: #1e1e1e;
+    color: white;
+}
+
+body.darkmode .table th,
+body.darkmode .table td {
+    border-color: #444;
+}
+
+       
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color:white;
+            color: black;
+            transition: background-color 0.3s,color 0.3s;
+            
+        }
+         
+        .update-label{ 
+            display:block;
+            width:200px;
+            padding:5px;
+            
+            border: radius 4px;
+            cursor:pointer;
+            background: #3498db;
+            color:#fff;
+
+        }
+        nav {
+    display: block !important; /* Ensure sidebar is always visible */
+}
+#emergency-mail:target ~ nav {
+    display: block !important; /* Keep sidebar visible when Emergency Mail is active */
+}
+
+        
+
+        .input-image{
+            display:none;
+        }
+        
+        
+
+        .font-small{
+            font-size:16px;
+        }
+        .font-large{
+            font-size:19px;
+        }
+
+         .font-medium{
+            font-size:17px;
+        }
+
+        .navbar {
+            background-color: var(--dark-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            
+        }
+        
+        .sidebar {
+            
+            height: calc(100vh - 56px);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 250px;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link {
+            
+            border-radius: 0;
+            padding: 12px 20px;
+            margin: 2px 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+    
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+
+        .card profileimg{
+            width: 50px;
+            height:50px;
+            border-radius:10%;
+            margin-bottom: 5px;
+           
+           
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .profile-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            color: #aaa;
+        }
+        
+        .patient-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .patient-card:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .patient-card.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .medicine-table tbody tr {
+            transition: background-color 0.3s;
+        }
+        
+        .medicine-table tbody tr:hover {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            
+            .sidebar.show {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Doctor photo upload styles */
+        .profile-photo-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .profile-photo-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        
+        .upload-photo-input {
+            display: none;
+        }
+        
+        /* Patient form styles */
+        .patient-form-container {
+            display: none;
+        }
+        
+        .patient-form-container.show {
+            display: block;
+        }
+
+        /* Settings styles */
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-section-title {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .settings-card {
+            margin-bottom: 20px;
+        }
+
+        .settings-card-header {
+            
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 500;
+        }
+
+        .settings-form-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .settings-toggle-label {
+            margin-right: 15px;
+        }
+
+        .settings-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #dee2e6;
+        }
+
+        .settings-avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .settings-avatar-edit {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .settings-security-level {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .settings-security-level-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            transition: width 0.3s;
+        }
+
+        .settings-password-strength {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .settings-notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .settings-notification-item:last-child {
+            border-bottom: none;
+        }
+            .profile button{
+            margin-top:20px;
+        padding : 5px 10px;
+        font-size: 14px;
+            cursor:pointer;
+             background-color: var(--primary-color);
+            color: white;
+             border: 2px solid white;
+        }
+
+        .profile img{
+            object-fit:cover;
+            object-position:center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-heart-pulse-fill me-2"></i>Medical Center-Doctor portal
+            </a>
+            <button class="navbar-toggler" type="button" id="sidebar-toggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="homeBtn">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
+                    
+                       
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                               Dr. John Smith
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                           
+                        
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="p-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="profile">
+                    <img id = "profileImage" src="defult.png" alt="ProfilePhoto" class="profile-img me-3"><br>
+                    
+                    <input type="file" id="fileInput" class="upload-photo-input" accept="image/*" style="display:none">
+                    <button onclick="openFile()" id="editbutton">Edit Profile</button>
+
+                </div>
+              
+  <script>
+    function openFile() {
+      document.getElementById('fileInput').click();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        document.getElementById('profileImage').src = dataUrl;
+        localStorage.setItem('profileImage', dataUrl);
+      };
+      reader.readAsDataURL(file);
+
+});
+
+    // Load saved image
+    const saved = localStorage.getItem('profileImage');
+    if (saved) {
+      document.getElementById('profileImage').src = saved;
+    }
+  </script>
+                <div>
+                    <h5 class="mb-1">Dr. John Smith</h5>
+                    <p class="mb-0 text-white-50">Cardiologist</p>
+                </div>
+            </div>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#patients" data-bs-toggle="tab">
+                    <i class="bi bi-people"></i> Patients
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="email.html" >
+                    <i class="bi bi-envelope-exclamation"></i> Emergency Mail
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="tab-content">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active" id="dashboard">
+                <div class="profile-header">
+                    <h4><i class="bi bi-person-badge"></i> Doctor Profile</h4>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Personal Information</span>
+                                
+                                <button class="btn btn-sm btn-outline-primary" id="goToProfileSettingsBtn"><i class="bi bi-pencil"></i> Edit</button>
+                                
+                            </div>
+                            <script>
+document.getElementById('goToProfileSettingsBtn').addEventListener('click', function () {
+    // Activate the main Settings tab
+    const settingsTab = new bootstrap.Tab(document.querySelector('a.nav-link[href="#settings"]'));
+    settingsTab.show();
+
+    // Delay needed to allow settings tab content to load before showing subtabs
+    setTimeout(() => {
+        const profileTab = new bootstrap.Tab(document.querySelector('a.nav-link[href="#profile"]'));
+        profileTab.show();
+    }, 300); // 300ms delay is usually sufficient
+});
+</script>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" value="Dr. John Smith" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Specialization</label>
+                                    <input type="text" class="form-control" value="Cardiologist" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="john.smith@medicare.com" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" class="form-control" value="+1 (555) 123-4567" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">License Number</label>
+                                    <input type="text" class="form-control" value="MD12345678" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Profile Information</span>
+                               
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">National ID</label>
+                                    <input type="text" class="form-control" value="1234567890" readonly>
+                                </div>
+                                
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-3">Total Patients</h5>
+                                <h2 class="mb-0">248</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="bi bi-calendar-check-fill text-success" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-3">Today's Appointments</h5>
+                                <h2 class="mb-0">12</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                       
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Patients Tab -->
+            <div class="tab-pane fade" id="patients">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-people"></i> Patient Management</h4>
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="patientSearch" placeholder="Search patients...">
+                    </div>
+                </div>
+                
+                <!-- Add Patient Button -->
+                <button class="btn btn-primary mb-3" id="addPatientBtn">
+                    <i class="bi bi-plus-circle"></i> Add New Patient
+                </button>
+                
+                <!-- Add Patient Form (Initially Hidden) -->
+                <div class="card mb-3 patient-form-container" id="addPatientForm">
+                    <div class="card-header">
+                        <h5>Add New Patient</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="patientForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="patientName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date of Birth</label>
+                                        <input type="date" class="form-control" id="patientDob" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Gender</label>
+                                        <select class="form-select" id="patientGender" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="patientPhone" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="patientEmail">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Address</label>
+                                        <input type="text" class="form-control" id="patientAddress" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Blood Type</label>
+                                        <select class="form-select" id="patientBloodType">
+                                            <option value="">Unknown</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Allergies</label>
+                                        <input type="text" class="form-control" id="patientAllergies" placeholder="Separate with commas">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Medical History</label>
+                                <textarea class="form-control" id="patientMedicalHistory" rows="3"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2" id="cancelPatientBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Patient</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <span>Patient List</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" id="patientList">
+                                    <a href="#" class="list-group-item list-group-item-action patient-card active" data-patient-id="1">
+                                        <div class="d-flex align-items-center">
+                                           
+                                            <div>
+                                                <h6 class="mb-0">Emma Johnson</h6>
+                                                <small class="text-muted">ID: P001 • Age: 45</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action patient-card" data-patient-id="2">
+                                        <div class="d-flex align-items-center">
+                                            
+                                            <div>
+                                                <h6 class="mb-0">Michael Brown</h6>
+                                                <small class="text-muted">ID: P002 • Age: 62</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action patient-card" data-patient-id="3">
+                                        <div class="d-flex align-items-center">
+                                        
+                                            <div>
+                                                <h6 class="mb-0">Sophia Williams</h6>
+                                                <small class="text-muted">ID: P003 • Age: 38</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action patient-card" data-patient-id="4">
+                                        <div class="d-flex align-items-center">
+                                            
+                                            <div>
+                                                <h6 class="mb-0">James Davis</h6>
+                                                <small class="text-muted">ID: P004 • Age: 55</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action patient-card" data-patient-id="5">
+                                        <div class="d-flex align-items-center">
+                                            
+                                            <div>
+                                                <h6 class="mb-0">Olivia Miller</h6>
+                                                <small class="text-muted">ID: P005 • Age: 29</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <span>Patient Details</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-3">
+                                      
+                                            <div>
+                                                <h5 class="mb-0">Emma Johnson</h5>
+                                                <p class="mb-0 text-muted">ID: P001 • Age: 45</p>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Phone</label>
+                                            <input type="text" class="form-control" value="+1 (555) 234-5678" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" value="emma.johnson@example.com" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Address</label>
+                                            <input type="text" class="form-control" value="456 Health Street, Medical City, NY 10002" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Blood Type</label>
+                                            <input type="text" class="form-control" value="A+" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Allergies</label>
+                                            <input type="text" class="form-control" value="Penicillin, Shellfish" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Medical History</label>
+                                            <textarea class="form-control" rows="3" readonly>Hypertension, Atrial Fibrillation, Type 2 Diabetes</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <ul class="nav nav-tabs" id="patientDetailsTabs">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-bs-toggle="tab" href="#patientHistory">Medical History</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#patientPrescriptions">Prescriptions</a>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="patientHistory">
+                                        <div class="table-responsive mt-3">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Diagnosis</th>
+                                                        <th>Doctor</th>
+                                                        <th>Notes</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>2023-05-15</td>
+                                                        <td>Hypertension</td>
+                                                        <td>Dr. John Smith</td>
+                                                        <td>Initial diagnosis, started on medication</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2023-07-22</td>
+                                                        <td>Atrial Fibrillation</td>
+                                                        <td>Dr. John Smith</td>
+                                                        <td>Diagnosed during routine checkup</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2023-09-10</td>
+                                                        <td>Type 2 Diabetes</td>
+                                                        <td>Dr. John Smith</td>
+                                                        <td>Added to treatment plan</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2023-11-05</td>
+                                                        <td>Follow-up</td>
+                                                        <td>Dr. John Smith</td>
+                                                        <td>Medication adjusted, blood pressure improved</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="patientPrescriptions">
+                                        <div class="mt-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h5>Previous Prescriptions</h5>
+                                                <button class="btn btn-primary" id="newPrescriptionBtn">
+                                                    <i class="bi bi-plus-circle"></i> New Prescription
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="card mb-3">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <span>Prescription #PR-2023-001</span>
+                                                    <small class="text-muted">Date: 2023-11-05</small>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="mb-2"><strong>Illness:</strong> Hypertension, Atrial Fibrillation, Type 2 Diabetes</p>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered medicine-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Medicine</th>
+                                                                    <th>Dosage</th>
+                                                                    <th>Frequency</th>
+                                                                    <th>Time</th>
+                                                                    <th>Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="medicineTableBody">
+                                                                <tr>
+                                                                    <td>
+                                                                        <select class="form-select">
+                                                                            <option>Losartan</option>
+                                                                            <option>Metoprolol</option>
+                                                                            <option>Atenolol</option>
+                                                                            <option>Carvedilol</option>
+                                                                            <option>Metformin</option>
+                                                                            <option>Glibenclamide</option>
+                                                                            <option>Glipizide</option>
+                                                                            <option>Other...</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" class="form-control" value="50mg">
+                                                                    </td>
+                                                                    <td>
+                                                                        <select class="form-select">
+                                                                            <option>Once daily</option>
+                                                                            <option>Twice daily</option>
+                                                                            <option>Three times daily</option>
+                                                                            <option>As needed</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <select class="form-select">
+                                                                            <option>Morning</option>
+                                                                            <option>Afternoon</option>
+                                                                            <option>Evening</option>
+                                                                            <option>Bedtime</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>
+                                                                        <select class="form-select">
+                                                                            <option>Metformin</option>
+                                                                            <option>Glibenclamide</option>
+                                                                            <option>Glipizide</option>
+                                                                            <option>Other...</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" class="form-control" value="500mg">
+                                                                    </td>
+                                                                    <td>
+                                                                        <select class="form-select">
+                                                                            <option>Once daily</option>
+                                                                            <option>Twice daily</option>
+                                                                            <option>Three times daily</option>
+                                                                            <option>As needed</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <select class="form-select">
+                                                                            <option>Morning</option>
+                                                                            <option>Afternoon</option>
+                                                                            <option>Evening</option>
+                                                                            <option>Bedtime</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mt-3">
+                                                        <button class="btn btn-success" id="addMedicineBtn">
+                                                            <i class="bi bi-plus-circle"></i> Add Medicine
+                                                        </button>
+                                                        <div>
+                                                            <button class="btn btn-primary me-2" id="generatePdfBtn">
+                                                                <i class="bi bi-file-earmark-pdf"></i> Generate PDF
+                                                            </button>
+                                                            <button class="btn btn-primary" id="uploadPrescriptionBtn">
+                                                                <i class="bi bi-upload"></i> Upload to Pharmacy
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Emergency Mail Tab -->
+            
+            
+            <!-- Settings Tab -->
+            <div class="tab-pane fade" id="settings">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-gear"></i> Settings</h4>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card settings-card">
+                            <div class="card-header settings-card-header">
+                                <h5 class="mb-0">Account Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="nav nav-pills flex-column" id="settingsTabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="profile-tab" data-bs-toggle="pill" href="#profile" role="tab">
+                                            <i class="bi bi-person me-2"></i> Profile
+                                        </a>
+                                    </li>
+                                    
+                                    
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="preferences-tab" data-bs-toggle="pill" href="#preferences" role="tab">
+                                            <i class="bi bi-sliders me-2"></i> Preferences
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="tab-content" id="settingsTabContent">
+                            <!-- Profile Settings -->
+                            <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                                <div class="card settings-card">
+                                    <div class="card-header settings-card-header">
+                                        <h5 class="mb-0">Profile Information</h5>
+                                    </div>
+                                   <form id="profileForm" action="upload.php" method="POST" enctype="multipart/form-data">
+  
+
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="settings-form-group">
+                                                        <label class="form-label">First Name</label>
+                                                        <input type="text" class="form-control" value="John">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="settings-form-group">
+                                                        <label class="form-label">Last Name</label>
+                                                        <input type="text" class="form-control" value="Smith">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Title</label>
+                                                <input type="text" class="form-control" value="Dr.">
+                                            </div>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Specialization</label>
+                                                <select class="form-select">
+                                                    <option>Cardiologist</option>
+                                                    <option>Neurologist</option>
+                                                    <option>Pediatrician</option>
+                                                    <option>General Practitioner</option>
+                                                    <option>Surgeon</option>
+                                                    <option>Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" value="john.smith@medicare.com">
+                                            </div>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Phone Number</label>
+                                                <input type="tel" class="form-control" value="+1 (555) 123-4567">
+                                            </div>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Bio</label>
+                                                <textarea class="form-control" rows="3">Board-certified cardiologist with 15 years of experience in treating cardiovascular diseases.</textarea>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-end mt-4">
+                                                <button type="button" class="btn btn-secondary me-2">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            
+                          
+                                     
+                            
+                            <!-- Preferences Settings -->
+                            <div class="tab-pane fade" id="preferences" role="tabpanel">
+                                <div class="card settings-card">
+                                    <div class="card-header settings-card-header">
+                                        <h5 class="mb-0">Application Preferences</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="preferencesForm">
+                                            <h6 class="settings-section-title">Display Settings</h6>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Theme</label>
+                                                <select class="form-select" id="themeSelector">
+                                                    <option value="light">Light</option>
+                                                    <option value="dark">Dark</option>
+                                                    
+                                                </select>
+                                            </div>
+                                           <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeSelector = document.getElementById('themeSelector');
+
+        // Load saved theme preference on page load
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            if (savedTheme === 'dark') {
+                document.body.classList.add('darkmode');
+            } else {
+                document.body.classList.remove('darkmode');
+            }
+            themeSelector.value = savedTheme; // Set the dropdown to the saved value
+        }
+
+        // Add event listener for theme change
+        themeSelector.addEventListener('change', function() {
+            if (this.value === 'dark') {
+                document.body.classList.add('darkmode');
+                localStorage.setItem('theme', 'dark'); // Save dark mode preference
+            } else {
+                document.body.classList.remove('darkmode');
+                localStorage.setItem('theme', 'light'); // Save light mode preference
+            }
+        });
+    });
+</script>
+
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Font Size</label>
+                                                <select class="form-select" id="fontSizeSelector">
+                                                    <option value="small">Small</option>
+                                                    <option value="medium" selected>Medium</option>
+                                                    <option value="large">Large</option>
+                                                </select>
+                                            </div>
+      <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const fontSizeSelector = document.getElementById("fontSizeSelector");
+
+        // Load saved font size preference on page load
+        const savedFontSize = localStorage.getItem("fontSize");
+        if (savedFontSize) {
+            document.body.classList.add(`font-${savedFontSize}`);
+            if (fontSizeSelector) { // Ensure the selector exists before trying to set its value
+                fontSizeSelector.value = savedFontSize;
+            }
+        } else {
+            // If no font size is saved, default to medium
+            document.body.classList.add("font-medium");
+            if (fontSizeSelector) {
+                fontSizeSelector.value = "medium";
+            }
+        }
+
+        // Add event listener for font size change
+        if (fontSizeSelector) {
+            fontSizeSelector.addEventListener("change", function () {
+                document.body.classList.remove("font-small", "font-medium", "font-large");
+                const selectedSize = this.value;
+                document.body.classList.add(`font-${selectedSize}`);
+                localStorage.setItem("fontSize", selectedSize);
+            });
+        }
+    });
+</script>
+
+
+
+
+                                            
+                                            
+                                            <div class="settings-form-group settings-toggle">
+                                                
+                                            </div>
+                                            
+                                            <h6 class="settings-section-title mt-4">Workflow Preferences</h6>
+                                            
+                                            <div class="settings-form-group">
+                                                <label class="form-label">Default View</label>
+                                                <select class="form-select" id="defaultViewSelect">
+                                                    <option value="dashboard">Dashboard</option>
+                                                    <option value="patients">Patients</option>
+                                                    <option value="emergency-mail">Emergency-mail</option>
+                                                </select>
+                                            </div>
+      <script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Get saved default view or fallback to dashboard
+    const defaultView = localStorage.getItem("defaultView") || "dashboard";
+
+    // Activate correct tab
+    const triggerTab = document.querySelector(`a.nav-link[href="#${defaultView}"]`);
+    if (triggerTab) {
+        new bootstrap.Tab(triggerTab).show();
+
+        // Remove 'active' from all sidebar nav links
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Add 'active' class to the selected tab
+        triggerTab.classList.add('active');
+    }
+
+    // Set the dropdown to match saved view
+    const defaultViewSelect = document.getElementById("defaultViewSelect");
+    if (defaultViewSelect) {
+        defaultViewSelect.value = defaultView;
+        defaultViewSelect.addEventListener("change", function () {
+            localStorage.setItem("defaultView", this.value);
+        });
+    }
+});
+</script>
+
+
+
+                                            
+                                            
+                                            
+                                            
+                                           
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- New Prescription Modal -->
+    <div class="modal fade" id="newPrescriptionModal" tabindex="-1" aria-labelledby="newPrescriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="newPrescriptionModalLabel"><i class="bi bi-clipboard2-pulse me-2"></i>New Prescription</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newPrescriptionForm">
+                        <div class="mb-3">
+                            <label for="patientName" class="form-label">Patient Name</label>
+                            <input type="text" class="form-control" id="patientName" value="Emma Johnson" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="patientId" class="form-label">Patient ID</label>
+                            <input type="text" class="form-control" id="patientId" value="P001" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="illness" class="form-label">Illness/Diagnosis</label>
+                            <textarea class="form-control" id="illness" rows="3" placeholder="Describe patient's illness or diagnosis..."></textarea>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered medicine-table">
+                                <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Dosage</th>
+                                        <th>Frequency</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="medicineTableBody">
+                                    <tr>
+                                        <td>
+                                            <select class="form-select">
+                                                <option>Select Medicine</option>
+                                                <option>Losartan</option>
+                                                <option>Metoprolol</option>
+                                                <option>Atenolol</option>
+                                                <option>Carvedilol</option>
+                                                <option>Metformin</option>
+                                                <option>Glibenclamide</option>
+                                                <option>Glipizide</option>
+                                                <option>Other...</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" placeholder="e.g. 50mg">
+                                        </td>
+                                        <td>
+                                            <select class="form-select">
+                                                <option>Select Frequency</option>
+                                                <option>Once daily</option>
+                                                <option>Twice daily</option>
+                                                <option>Three times daily</option>
+                                                <option>As needed</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select class="form-select">
+                                                <option>Select Time</option>
+                                                <option>Morning</option>
+                                                <option>Afternoon</option>
+                                                <option>Evening</option>
+                                                <option>Bedtime</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-success" id="addNewMedicineBtn">
+                                <i class="bi bi-plus-circle"></i> Add Medicine
+                            </button>
+                            <button type="button" class="btn btn-primary" id="savePrescriptionBtn">
+                                <i class="bi bi-save"></i> Save Prescription
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Prescription Modal -->
+    <div class="modal fade" id="uploadPrescriptionModal" tabindex="-1" aria-labelledby="uploadPrescriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="uploadPrescriptionModalLabel"><i class="bi bi-upload me-2"></i>Upload Prescription to Pharmacy</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadPrescriptionForm">
+                        <div class="mb-3">
+                            <label for="pharmacyEmail" class="form-label">Pharmacy Email</label>
+                            <input type="email" class="form-control" id="pharmacyEmail" value="pharmacy@medicare.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="prescriptionNotes" class="form-label">Notes for Pharmacy</label>
+                            <textarea class="form-control" id="prescriptionNotes" rows="3">Please prepare these medications for patient Emma Johnson (ID: P001).</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload PDF</label>
+                            <input type="file" class="form-control" id="prescriptionFile" accept=".pdf">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmUploadBtn">
+                        <i class="bi bi-upload"></i> Upload Prescription
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle
+            document.getElementById('sidebar-toggle').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('show');
+            });
+            
+            // Home button functionality
+            document.getElementById('homeBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                // Show dashboard tab
+                const dashboardTab = new bootstrap.Tab(document.querySelector('#dashboard-tab'));
+                dashboardTab.show();
+                showToast('Returned to dashboard', 'info');
+            });
+            
+            // Logout button functionality
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                showToast('Logging out...', 'info');
+                // In a real application, this would redirect to logout endpoint
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            });
+            
+            // Patient search functionality
+            document.getElementById('patientSearch').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const patientCards = document.querySelectorAll('.patient-card');
+                
+                patientCards.forEach(card => {
+                    const patientName = card.querySelector('h6').textContent.toLowerCase();
+                    const patientId = card.querySelector('small').textContent.toLowerCase();
+                    
+                    if (patientName.includes(searchTerm) || patientId.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Emergency patient search functionality
+            document.getElementById('emergencyPatientSearch').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const patientCards = document.querySelectorAll('.emergency-patient-card');
+                
+                patientCards.forEach(card => {
+                    const patientName = card.querySelector('h6').textContent.toLowerCase();
+                    const patientId = card.querySelector('small').textContent.toLowerCase();
+                    
+                    if (patientName.includes(searchTerm) || patientId.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Patient selection
+            document.querySelectorAll('.patient-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all cards
+                    document.querySelectorAll('.patient-card').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    
+                    // Get patient ID
+                    const patientId = this.getAttribute('data-patient-id');
+                    
+                    // Show toast notification
+                    showToast(`Patient ${this.querySelector('h6').textContent} selected`, 'info');
+                });
+            });
+            
+            // Emergency patient selection
+            document.querySelectorAll('.emergency-patient-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all cards
+                    document.querySelectorAll('.emergency-patient-card').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    
+                    // Update emergency form with patient details
+                    const patientName = this.querySelector('h6').textContent;
+                    const patientId = this.getAttribute('data-patient-id');
+                    
+                    document.getElementById('emergencySubject').value = `URGENT: Patient Emergency - ${patientName} (${patientId})`;
+                    
+                    // Show toast notification
+                    showToast(`Patient ${patientName} selected for emergency mail`, 'warning');
+                });
+            });
+            
+            // Add patient button
+            document.getElementById('addPatientBtn').addEventListener('click', function() {
+                document.getElementById('addPatientForm').classList.add('show');
+                this.style.display = 'none';
+            });
+            
+            // Cancel add patient form
+            document.getElementById('cancelPatientBtn').addEventListener('click', function() {
+                document.getElementById('addPatientForm').classList.remove('show');
+                document.getElementById('addPatientBtn').style.display = 'block';
+                document.getElementById('patientForm').reset();
+            });
+            
+            // Submit patient form
+            document.getElementById('patientForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // In a real application, this would send data to server
+                // For demo, we'll just show a success message
+                showToast('Patient added successfully', 'success');
+                
+                // Hide form and show button again
+                document.getElementById('addPatientForm').classList.remove('show');
+                document.getElementById('addPatientBtn').style.display = 'block';
+                this.reset();
+            });
+            
+            // Submit emergency mail form
+            document.getElementById('emergencyMailForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const subject = document.getElementById('emergencySubject').value;
+                const priority = document.getElementById('emergencyPriority').value;
+                
+                // In a real application, this would send the email
+                showToast(`Emergency mail sent to hospital (Priority: ${priority})`, 'success');
+                
+                // Reset form
+                this.reset();
+            });
+            
+            // Cancel emergency mail
+            document.getElementById('cancelEmergencyMailBtn').addEventListener('click', function() {
+                document.getElementById('emergencyMailForm').reset();
+                showToast('Emergency mail cancelled', 'warning');
+            });
+            
+               Add_medicine row
+            document.getElementById('addMedicineBtn').addEventListener('click', function() {
+                const medicineTableBody = document.querySelector('#medicineTableBody');
+                const newRow = document.createElement('tr');
+                
+                newRow.innerHTML = `
+                    <td>
+                        <select class="form-select">
+                            <option>Select Medicine</option>
+                            <option>Losartan</option>
+                            <option>Metoprolol</option>
+                            <option>Atenolol</option>
+                            <option>Carvedilol</option>
+                            <option>Metformin</option>
+                            <option>Glibenclamide</option>
+                            <option>Glipizide</option>
+                            <option>Other...</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="e.g. 50mg">
+                    </td>
+                    <td>
+                        <select class="form-select">
+                            <option>Select Frequency</option>
+                            <option>Once daily</option>
+                            <option>Twice daily</option>
+                            <option>Three times daily</option>
+                            <option>As needed</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select">
+                            <option>Select Time</option>
+                            <option>Morning</option>
+                            <option>Afternoon</option>
+                            <option>Evening</option>
+                            <option>Bedtime</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                
+                medicineTableBody.appendChild(newRow);
+                
+                // Add event listener to the new remove button
+                newRow.querySelector('.remove-row').addEventListener('click', function() {
+                    this.closest('tr').remove();
+                });
+            });
+            
+            // Add event listeners to existing remove buttons
+            document.querySelectorAll('.remove-row').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('tr').remove();
+                });
+            });
+            
+            // New Prescription button
+            document.getElementById('newPrescriptionBtn').addEventListener('click', function() {
+                const newPrescriptionModal = new bootstrap.Modal(document.getElementById('newPrescriptionModal'));
+                newPrescriptionModal.show();
+            });
+            
+            // Add Medicine in the new prescription modal
+            document.getElementById('addNewMedicineBtn').addEventListener('click', function() {
+                const medicineTableBody = document.getElementById('medicineTableBody');
+                const newRow = document.createElement('tr');
+                
+                newRow.innerHTML = `
+                    <td>
+                        <select class="form-select">
+                            <option>Select Medicine</option>
+                            <option>Losartan</option>
+                            <option>Metoprolol</option>
+                            <option>Atenolol</option>
+                            <option>Carvedilol</option>
+                            <option>Metformin</option>
+                            <option>Glibenclamide</option>
+                            <option>Glipizide</option>
+                            <option>Other...</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="e.g. 50mg">
+                    </td>
+                    <td>
+                        <select class="form-select">
+                            <option>Select Frequency</option>
+                            <option>Once daily</option>
+                            <option>Twice daily</option>
+                            <option>Three times daily</option>
+                            <option>As needed</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select">
+                            <option>Select Time</option>
+                            <option>Morning</option>
+                            <option>Afternoon</option>
+                            <option>Evening</option>
+                            <option>Bedtime</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                
+                medicineTableBody.appendChild(newRow);
+                
+                // Add event listener to the new remove button
+                newRow.querySelector('.remove-row').addEventListener('click', function() {
+                    this.closest('tr').remove();
+                });
+            });
+            
+            // Save prescription button
+            document.getElementById('savePrescriptionBtn').addEventListener('click', function() {
+                const illness = document.getElementById('illness').value;
+                
+                if (!illness.trim()) {
+                    showToast('Please describe the patient\'s illness or diagnosis', 'warning');
+                    return;
+                }
+                
+                // Check if at least one medicine is added
+                const medicineSelects = document.querySelectorAll('#medicineTableBody select');
+                let hasMedicine = false;
+                
+                for (let i = 0; i < medicineSelects.length; i++) {
+                    if (medicineSelects[i].value !== 'Select Medicine') {
+                        hasMedicine = true;
+                        break;
+                    }
+                }
+                
+                if (!hasMedicine) {
+                    showToast('Please add at least one medicine', 'warning');
+                    return;
+                }
+                
+                // Close modal
+                const newPrescriptionModal = bootstrap.Modal.getInstance(document.getElementById('newPrescriptionModal'));
+                newPrescriptionModal.hide();
+                
+                // Show success message
+                showToast('Prescription saved successfully', 'success');
+            });
+            
+            // Upload prescription button
+            document.getElementById('uploadPrescriptionBtn').addEventListener('click', function() {
+                const uploadPrescriptionModal = new bootstrap.Modal(document.getElementById('uploadPrescriptionModal'));
+                uploadPrescriptionModal.show();
+            });
+            
+            // Confirm upload button
+            document.getElementById('confirmUploadBtn').addEventListener('click', function() {
+                const uploadPrescriptionModal = bootstrap.Modal.getInstance(document.getElementById('uploadPrescriptionModal'));
+                uploadPrescriptionModal.hide();
+                
+                showToast('Prescription uploaded to pharmacy', 'success');
+            });
+            
+            // Generate PDF button
+            document.getElementById('generatePdfBtn').addEventListener('click', function() {
+                // Using jsPDF for PDF generation
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add title
+                doc.setFontSize(18);
