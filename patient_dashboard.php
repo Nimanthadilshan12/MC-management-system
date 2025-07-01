@@ -16,9 +16,10 @@ if ($conn->connect_error) {
 
 $UserID = $_SESSION['UserID'];
 $role = $_SESSION['role'];
+echo "Role: " . htmlspecialchars($role) . "<br>";
 
 if ($role === 'Patient') {
-    $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Birth FROM patients WHERE UserID = ?");
+    $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Birth, Blood_Type, Gender FROM patients WHERE UserID = ?");
 } else { // Doctor
     $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Specialization, RegNo FROM doctors WHERE UserID = ?");
 }
@@ -460,21 +461,21 @@ $conn->close();
                 </div>
                 <h4 class="welcome-title">Welcome, <?php echo $role == 'Patient' ? htmlspecialchars($user['Fullname']) : 'Dr. ' . htmlspecialchars($user['Fullname']); ?>!</h4>
                 <div class="info-row">
-                    <div class="info-item">
-                        <i class="fas fa-envelope icon"></i>
-                        <span class="label">Email:</span>
-                        <span class="value"><?php echo htmlspecialchars($user['Email']); ?></span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-phone icon"></i>
-                        <span class="label">Contact:</span>
-                        <span class="value"><?php echo htmlspecialchars($user['Contact_No']); ?></span>
-                    </div>
                     <?php if ($role === 'Patient') { ?>
                         <div class="info-item">
                             <i class="fas fa-birthday-cake icon"></i>
                             <span class="label">Date of Birth:</span>
                             <span class="value"><?php echo htmlspecialchars($user['Birth']); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-tint icon"></i>
+                            <span class="label">Blood Group:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Blood_Type']); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-venus-mars icon"></i>
+                            <span class="label">Gender:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Gender']); ?></span>
                         </div>
                     <?php } else { ?>
                         <div class="info-item">
@@ -488,13 +489,30 @@ $conn->close();
                             <span class="value"><?php echo htmlspecialchars($user['RegNo']); ?></span>
                         </div>
                     <?php } ?>
+                    <div class="info-item">
+                        <i class="fas fa-phone icon"></i>
+                        <span class="label">Contact:</span>
+                        <span class="value">&nbsp;<?php echo htmlspecialchars($user['Contact_No']); ?></span>
+                    </div>
+                     </div>
+                        <div class="info-item">
+                            <i class="fas fa-user icon"></i>
+                            <span class="label">Age:</span>
+                            <span class="value"><?php echo !empty($user['Birth']) ? (new DateTime())->diff(new DateTime($user['Birth']))->y : 'N/A'; ?></span>
+                        </div>
+                        <div class="info-item">
+                        <i class="fas fa-envelope icon"></i>
+                        <span class="label">Email:</span>
+                        <span class="value">&nbsp;<?php echo htmlspecialchars($user['Email']); ?></span>
+                    </div>
                 </div>
             </div>
             <div class="action-buttons">
                 <a href="patient_history.php?edit=<?php echo $role === 'Doctor' ? 'true' : 'false'; ?>" class="btn-action"><i class="fas fa-history me-2"></i>Patient History</a>
                 <?php if ($role === 'Patient') { ?>
-                    <a href="#" class="btn-action"><i class="fas fa-calendar-check me-2"></i>View Prescription</a>
-                    <a href="#" class="btn-action"><i class="fas fa-calendar-check me-2"></i>Edit Personal Details</a>
+                    <a href="view_prescription.php" class="btn-action"><i class="fas fa-prescription-bottle-alt me-2"></i>View Prescription</a>
+                    <a href="edit_patient_details.php" class="btn-action"><i class="fas fa-edit me-2"></i>Edit Personal Details</a>
+                    <a href="feedback.php" class="btn-action"><i class="fas fa-comment-dots me-2"></i>Submit Feedback</a>
                 <?php } ?>
             </div>
             <a href="logout.php" class="btn btn-danger mt-4"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
