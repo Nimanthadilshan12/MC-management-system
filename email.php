@@ -1,0 +1,937 @@
+<?php
+// Database connection
+$servername = "localhost";
+$username = "root"; // Replace with your MySQL username
+$password = ""; // Replace with your MySQL password
+$dbname = "mc1"; // Replace with your database name if different
+
+try {
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+} catch (Exception $e) {
+    die("Connection error: " . $e->getMessage());
+}
+
+// Handle form submission
+$errors = [];
+$success = "";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $doctor_name = trim($_POST['doctor_name']);
+    $doctor_email = trim($_POST['your_email']);
+    $patient_name = trim($_POST['patient_name']);
+    $patient_age = (int)$_POST['patient_age'];
+    $patient_condition = trim($_POST['patient_condition']);
+    $priority_level = $_POST['priority_level'];
+    $hospital_email = trim($_POST['hospital_email']);
+
+    // Validate inputs
+    if (empty($doctor_name) || empty($doctor_email) || empty($patient_name) || empty($patient_age) || empty($patient_condition) || empty($priority_level) || empty($hospital_email)) {
+        $errors[] = "All fields are required.";
+    }
+
+    // Validate email formats
+    if (!filter_var($doctor_email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid doctor email format.";
+    }
+    if (!filter_var($hospital_email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid hospital email format.";
+    }
+
+    // Validate doctor exists
+    $stmt = $conn->prepare("SELECT id FROM doctors WHERE Email = ? AND Fullname = ?");
+    $stmt->bind_param("ss", $doctor_email, $doctor_name);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows == 0) {
+        $errors[] = "Doctor not found with the provided name and email.";
+    } else {
+        $doctor = $result->fetch_assoc();
+        $doctor_id = $doctor['id'];
+    }
+    $stmt->close();
+
+    // Validate patient exists
+    $stmt = $conn->prepare("SELECT UserID FROM patients WHERE Fullname = ? AND Age = ?");
+    $stmt->bind_param("si", $patient_name, $patient_age);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows == 0) {
+        $errors[] = "Patient not found with the provided name and age.";
+    } else {
+        $patient = $result->fetch_assoc();
+        $patient_id = $patient['UserID'];
+    }
+    $stmt->close();
+
+    // Validate priority level
+    $valid_priorities = ['Low', 'Medium', 'High', 'Critical'];
+    if (!in_array($priority_level, $valid_priorities)) {
+        $errors[] = "Invalid priority level.";
+    }
+
+    // If no errors, insert into emergency_notifications
+    if (empty($errors)) {
+        $stmt = $conn->prepare("INSERT INTO emergency_notifications (doctor_id, patient_id, doctor_email, patient_age, patient_condition, priority_level, hospital_email) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ississs", $doctor_id, $patient_id, $doctor_email, $patient_age, $patient_condition, $priority_level, $hospital_email);
+        if ($stmt->execute()) {
+            $success = "Emergency notification sent successfully!";
+        } else {
+            $errors[] = "Failed to send notification: " . $conn->error;
+        }
+        $stmt->close();
+    }
+}
+$conn->close();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Patient Notification System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        (function() {
+            emailjs.init('9aeZ8Li4u-Y_YMvNn'); // You'll need to replace this with your actual EmailJS user ID
+        })();
+    </script>
+    <style>
+        :root {
+            --primary: #e63946;
+            --secondary: #457b9d;
+            --light: #f1faee;
+            --dark: #1d3557;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width:90%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .header h1 i {
+            margin-right: 15px;
+            font-size: 1.5em;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #c1121f;
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .priority-indicator {
+            height: 10px;
+            width: 100%;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+
+        .low {
+            background-color: #2a9d8f;
+        }
+
+        .medium {
+            background-color: #e9c46a;
+        }
+
+        .high {
+            background-color: #f4a261;
+        }
+
+        .critical {
+            background-color: #e63946;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-ambulance"></i> Emergency Patient Notification System</h1>
+        </div>
+        
+        <div class="form-container">
+            <form id="emergencyForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="doctorName"><i class="fas fa-user-md"></i> Doctor Name</label>
+                        <input type="text" id="doctorName" name="doctorName" required placeholder="Dr. John Smith">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorEmail"><i class="fas fa-envelope"></i> Your Email</label>
+                        <input type="email" id="doctorEmail" name="doctorEmail" required placeholder="your.email@example.com">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="patientName"><i class="fas fa-user-injured"></i> Patient Name</label>
+                        <input type="text" id="patientName" name="patientName" required placeholder="Patient Full Name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientAge"><i class="fas fa-birthday-cake"></i> Patient Age</label>
+                        <input type="number" id="patientAge" name="patientAge" required placeholder="Patient Age">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="patientCondition"><i class="fas fa-heartbeat"></i> Patient Condition</label>
+                    <textarea id="patientCondition" name="patientCondition" rows="3" required placeholder="Describe the patient's condition in detail"></textarea>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="patientPriority"><i class="fas fa-exclamation-triangle"></i> Priority Level</label>
+                        <select id="patientPriority" name="patientPriority" required>
+                            <option value="">Select Priority</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                        <div id="priorityIndicator" class="priority-indicator"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hospitalEmail"><i class="fas fa-hospital"></i> Hospital Email</label>
+                        <input type="email" id="hospitalEmail" name="hospitalEmail" required value="bhadrah516@gmail.com">
+                    </div>
+                </div>
+                
+                <button type="submit" id="submitBtn">
+                    <span id="submitText"><i class="fas fa-paper-plane"></i> Send Emergency Notification</span>
+                    <span id="submitLoader" class="loading" style="display: none;"></span>
+                </button>
+            </form>
+            
+            <div id="statusMessage" class="status"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('emergencyForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitLoader = document.getElementById('submitLoader');
+            const statusMessage = document.getElementById('statusMessage');
+            const prioritySelect = document.getElementById('patientPriority');
+            const priorityIndicator = document.getElementById('priorityIndicator');
+            
+            // Update priority indicator color
+            prioritySelect.addEventListener('change', function() {
+                const priority = this.value;
+                priorityIndicator.className = 'priority-indicator ' + priority.toLowerCase();
+            });
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                submitText.style.display = 'none';
+                submitLoader.style.display = 'inline-block';
+                submitBtn.disabled = true;
+                
+                // Prepare email parameters
+                const templateParams = {
+                    doctor_name: form.doctorName.value,
+                    doctor_email: form.doctorEmail.value,
+                    patient_name: form.patientName.value,
+                    patient_age: form.patientAge.value,
+                    patient_condition: form.patientCondition.value,
+                    patient_priority: form.patientPriority.value,
+                    hospital_email: form.hospitalEmail.value,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                // Send email using EmailJS
+                emailjs.send('service_2mrwzxo', 'template_cnz9l3u', templateParams)
+                    .then(function(response) {
+                        console.log('SUCCESS!', response.status, response.text);
+                        
+                        // Show success message
+                        statusMessage.textContent = 'Emergency notification sent successfully! Hospital has been alerted.';
+                        statusMessage.className = 'status success';
+                        statusMessage.style.display = 'block';
+                        
+                        // Reset form
+                        form.reset();
+                        priorityIndicator.className = 'priority-indicator';
+                    }, function(error) {
+                        console.log('FAILED...', error);
+                        
+                        // Show error message
+                        statusMessage.textContent = 'Failed to send notification. Please try again or contact hospital directly. Error: ' + error.text;
+                        statusMessage.className = 'status error';
+                        statusMessage.style.display = 'block';
+                    })
+                    .finally(function() {
+                        // Reset button state
+                        submitText.style.display = 'block';
+                        submitLoader.style.display = 'none';
+                        submitBtn.disabled = false;
+                        
+                        // Hide status message after 5 seconds
+                        setTimeout(function() {
+                            statusMessage.style.display = 'none';
+                        }, 10000);
+                    });
+            });
+        });
+    </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+        }
+
+        body.darkmode{
+            --primary-color: #3d98d4;
+            --secondary-color: #2e8853;
+            --dark-color: #191d21;
+            --light-color: #021f26;
+            --danger-color: #e74c3c;
+            --warning-color: #644616;
+            background-color: #070808;
+            color:white;
+
+        }
+
+        body.darkmode .card,
+body.darkmode .form-control,
+body.darkmode .form-select,
+body.darkmode .dropdown-menu,
+body.darkmode .list-group-item,
+body.darkmode .table,
+body.darkmode .modal-content {
+    background-color: #1e1e1e;
+    color: white;
+    border-color: #444;
+}
+
+body.darkmode .form-control::placeholder,
+body.darkmode .form-select,
+body.darkmode .text-muted {
+    color: #ccc;
+}
+
+body.darkmode .card-header {
+    background-color: #2a2a2a;
+    border-bottom-color: #444;
+}
+
+body.darkmode .list-group-item {
+    background-color: #1e1e1e;
+    color: white;
+}
+
+body.darkmode .table th,
+body.darkmode .table td {
+    border-color: #444;
+}
+
+       
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color:white;
+            color: black;
+            transition: background-color 0.3s,color 0.3s;
+            
+        }
+         
+        .update-label{ 
+            display:block;
+            width:200px;
+            padding:5px;
+            
+            border: radius 4px;
+            cursor:pointer;
+            background: #3498db;
+            color:#fff;
+
+        }
+
+        
+
+        .input-image{
+            display:none;
+        }
+        
+        
+
+        .font-small{
+            font-size:16px;
+        }
+        .font-large{
+            font-size:19px;
+        }
+
+         .font-medium{
+            font-size:17px;
+        }
+
+        .navbar {
+            background-color: var(--dark-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            
+        }
+        
+        .sidebar {
+            
+            height: calc(100vh - 56px);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 250px;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link {
+            
+            border-radius: 0;
+            padding: 12px 20px;
+            margin: 2px 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+    
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+
+        .card profileimg{
+            width: 50px;
+            height:50px;
+            border-radius:10%;
+            margin-bottom: 5px;
+           
+           
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .profile-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            color: #aaa;
+        }
+        
+        .patient-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .patient-card:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .patient-card.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .medicine-table tbody tr {
+            transition: background-color 0.3s;
+        }
+        
+        .medicine-table tbody tr:hover {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            
+            .sidebar.show {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Doctor photo upload styles */
+        .profile-photo-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .profile-photo-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        
+        .upload-photo-input {
+            display: none;
+        }
+        
+        /* Patient form styles */
+        .patient-form-container {
+            display: none;
+        }
+        
+        .patient-form-container.show {
+            display: block;
+        }
+
+        /* Settings styles */
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-section-title {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .settings-card {
+            margin-bottom: 20px;
+        }
+
+        .settings-card-header {
+            
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 500;
+        }
+
+        .settings-form-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .settings-toggle-label {
+            margin-right: 15px;
+        }
+
+        .settings-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #dee2e6;
+        }
+
+        .settings-avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .settings-avatar-edit {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .settings-security-level {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .settings-security-level-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            transition: width 0.3s;
+        }
+
+        .settings-password-strength {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .settings-notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .settings-notification-item:last-child {
+            border-bottom: none;
+        }
+            .profile button{
+            margin-top:20px;
+        padding : 5px 10px;
+        font-size: 14px;
+            cursor:pointer;
+             background-color: var(--primary-color);
+            color: white;
+             border: 2px solid white;
+        }
+
+        .profile img{
+            object-fit:cover;
+            object-position:center;
+        }
+    
+</head>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-heart-pulse-fill me-2"></i>Medical Center-Doctor portal
+            </a>
+            <button class="navbar-toggler" type="button" id="sidebar-toggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="homeBtn">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
+                    
+                       
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                               Dr. John Smith
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                           
+                        
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="p-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="profile">
+                    <img id = "profileImage" src="defult.png" alt="ProfilePhoto" class="profile-img me-3"><br>
+                    
+                    <input type="file" id="fileInput" class="upload-photo-input" accept="image/*" style="display:none">
+                    <button onclick="openFile()" id="editbutton">Edit Profile</button>
+
+                </div>
+              
+  <script>
+    function openFile() {
+      document.getElementById('fileInput').click();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        document.getElementById('profileImage').src = dataUrl;
+        localStorage.setItem('profileImage', dataUrl);
+      };
+      reader.readAsDataURL(file);
+
+});
+
+    // Load saved image
+    const saved = localStorage.getItem('profileImage');
+    if (saved) {
+      document.getElementById('profileImage').src = saved;
+    }
+  </script>
+                <div>
+                    <h5 class="mb-1">Dr. John Smith</h5>
+                    <p class="mb-0 text-white-50">Cardiologist</p>
+                </div>
+            </div>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#patients" data-bs-toggle="tab">
+                    <i class="bi bi-people"></i> Patients
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="email.html" >
+                    <i class="bi bi-envelope-exclamation"></i> Emergency Mail
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
