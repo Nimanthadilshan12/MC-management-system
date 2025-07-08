@@ -14,12 +14,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$UserID = $_SESSION['role'] === 'Patient' ? $_SESSION['UserID'] : null;
+$UserID = $_SESSION['UserID'];
 $role = $_SESSION['role'];
 $success_message = '';
 $error_message = '';
 $feedbackCount = 0;
 
+// Handle feedback submission (Patients only)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role === 'Patient') {
     $feedback = filter_input(INPUT_POST, 'feedback', FILTER_SANITIZE_STRING);
     if (empty($feedback)) {
@@ -40,18 +41,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role === 'Patient') {
     }
 }
 
-// Fetch feedback count and feedback history
-$stmt = $conn->prepare("SELECT COUNT(*) as count, user_id, feedback_text, submit_date FROM feedback ORDER BY submit_date DESC");
+// Fetch feedback count and history
+if ($role === 'Patient') {
+    // Patients: Count and fetch their own feedback
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM feedback WHERE user_id = ?");
+    $stmt->bind_param("s", $UserID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $feedbackCount = $result->fetch_assoc()['count'];
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT user_id, feedback_text, submit_date FROM feedback WHERE user_id = ? ORDER BY submit_date DESC");
+    $stmt->bind_param("s", $UserID);
+} else {
+    // Admins: Count and fetch all feedback
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM feedback");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $feedbackCount = $result->fetch_assoc()['count'];
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT user_id, feedback_text, submit_date FROM feedback ORDER BY submit_date DESC");
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $feedbacks = $result->fetch_all(MYSQLI_ASSOC);
-if ($result->num_rows > 0) {
-    $feedbackCount = $feedbacks[0]['count'];
-}
 $stmt->close();
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,6 +133,18 @@ $conn->close();
         #feedbackHistory {
             margin-top: 20px;
         }
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 60px;
+                padding: 0 15px;
+            }
+            .card {
+                padding: 30px;
+            }
+            .card-header h2 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -139,11 +168,8 @@ $conn->close();
                     <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Feedback</button>
                 </form>
             <?php } ?>
+            <div id="feedbackCount">Total Feedback Submitted: <?php echo htmlspecialchars($feedbackCount); ?></div>
             <?php if (in_array($role, ['Admin', 'Patient'])) { ?>
-                <a href="feedback_chart.php" class="btn btn-primary mt-3"><i class="fas fa-chart-bar"></i> View Feedback Chart</a>
-                <div id="feedbackCount" style="display:none;">Total Feedback Submitted: <?php echo htmlspecialchars($feedbackCount); ?></div>
-            <?php } ?>
-            <?php if ($role === 'Patient') { ?>
                 <button id="viewHistory" class="btn btn-primary mt-3"><i class="fas fa-history"></i> View Feedback History</button>
                 <div id="feedbackHistory">
                     <?php if (empty($feedbacks)) { ?>
@@ -167,21 +193,12 @@ $conn->close();
         document.getElementById('viewHistory')?.addEventListener('click', function() {
             const historyDiv = document.getElementById('feedbackHistory');
             const items = historyDiv.getElementsByClassName('feedback-item');
-            const isHidden = items[0].style.display === 'none' || items[0].style.display === '';
+            const isHidden = items[0] && (items[0].style.display === 'none' || items[0].style.display === '');
             for (let item of items) {
                 item.style.display = isHidden ? 'block' : 'none';
             }
             this.textContent = isHidden ? 'Hide Feedback History' : 'View Feedback History';
             this.innerHTML = isHidden ? '<i class="fas fa-eye-slash"></i> Hide Feedback History' : '<i class="fas fa-history"></i> View Feedback History';
-        });
-
-        document.getElementById('showFeedbackCount')?.addEventListener('click', function() {
-            const countDiv = document.getElementById('feedbackCount');
-            if (countDiv.style.display === 'none') {
-                countDiv.style.display = 'block';
-            } else {
-                countDiv.style.display = 'none';
-            }
         });
     </script>
 </body>
