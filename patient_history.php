@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['UserID']) || !in_array($_SESSION['role'], ['Patient', 'Doctor', 'Admin'])) {
+if (!isset($_SESSION['UserID']) || !in_array($_SESSION['role'], ['Admin', 'Patient'])) {
     header("Location: ../../login.php");
     exit;
 }
@@ -16,27 +16,68 @@ if ($conn->connect_error) {
 
 $UserID = $_SESSION['UserID'];
 $role = $_SESSION['role'];
-$edit = isset($_GET['edit']) && $_GET['edit'] === 'true' && $role === 'Doctor';
 
 if ($role === 'Patient') {
     $stmt = $conn->prepare("SELECT visit_date, diagnosis, treatment FROM patient_history WHERE patient_id = ?");
     $stmt->bind_param("s", $UserID);
-} else {
-    $stmt = $conn->prepare("SELECT patient_id, visit_date, diagnosis, treatment FROM patient_history WHERE doctor_id = ?");
-    $stmt->bind_param("s", $UserID);
+} else { // Admin
+    $stmt = $conn->prepare("SELECT visit_date, diagnosis, treatment FROM patient_history WHERE patient_id = ?");
+    $stmt->bind_param("s", $UserID); // Adjust for all patients if needed
 }
 $stmt->execute();
 $result = $stmt->get_result();
 $history = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conn->close();
+
+// Analyze data
+$visitCount = count($history);
+$diagnoses = array_count_values(array_column($history, 'diagnosis'));
+$commonDiagnosis = !empty($diagnoses) ? array_search(max($diagnoses), $diagnoses) : 'None';
+$treatments = array_count_values(array_column($history, 'treatment'));
+$commonTreatment = !empty($treatments) ? array_search(max($treatments), $treatments) : 'None';
+
+// Prepare data for charts
+$visitsByMonth = [];
+foreach ($history as $record) {
+    $month = date('Y-m', strtotime($record['visit_date']));
+    $visitsByMonth[$month] = ($visitsByMonth[$month] ?? 0) + 1;
+}
+$chartLabels = array_keys($visitsByMonth);
+$chartData = array_values($visitsByMonth);
+
+// Prepare pie chart data
+$pieLabels = array_keys($diagnoses);
+$pieData = array_values($diagnoses);
+$pieColors = [
+    'rgba(255, 99, 132, 0.6)',
+    'rgba(54, 162, 235, 0.6)',
+    'rgba(255, 206, 86, 0.6)',
+    'rgba(75, 192, 192, 0.6)',
+    'rgba(153, 102, 255, 0.6)'
+];
+
+// Handle report generation
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_pdf'])) {
+    // Store data in session to pass to generate_report.php
+    $_SESSION['report_data'] = [
+        'UserID' => $UserID,
+        'role' => $role,
+        'visitCount' => $visitCount,
+        'commonDiagnosis' => $commonDiagnosis,
+        'commonTreatment' => $commonTreatment,
+        'history' => $history
+    ];
+    header("Location: generate_report.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient History</title>
+    <title>Analyze My History</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -64,6 +105,14 @@ $conn->close();
             color: transparent;
             text-align: center;
         }
+        .summary-item {
+            margin-bottom: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
         .btn-primary {
             background: linear-gradient(to right, #007bff, #00c4b4);
             border: none;
@@ -71,56 +120,124 @@ $conn->close();
         .btn-primary:hover {
             background: linear-gradient(to right, #0056b3, #00a896);
         }
+        .chart-buttons {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <div class="card-header">
-                <h2>Patient History</h2>
+                <h2>Analyze My History</h2>
             </div>
             <?php if (empty($history)) { ?>
-                <p>No history found.</p>
+                <p>No history available for analysis.</p>
             <?php } else { ?>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <?php if ($role === 'Doctor') { ?>
-                                <th>Patient ID</th>
-                            <?php } ?>
-                            <th>Visit Date</th>
-                            <th>Diagnosis</th>
-                            <th>Treatment</th>
-                            <?php if ($edit) { ?>
-                                <th>Actions</th>
-                            <?php } ?>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($history as $record) { ?>
-                            <tr>
-                                <?php if ($role === 'Doctor') { ?>
-                                    <td><?php echo htmlspecialchars($record['patient_id']); ?></td>
-                                <?php } ?>
-                                <td><?php echo htmlspecialchars($record['visit_date']); ?></td>
-                                <td><?php echo htmlspecialchars($record['diagnosis']); ?></td>
-                                <td><?php echo htmlspecialchars($record['treatment']); ?></td>
-                                <?php if ($edit) { ?>
-                                    <td><a href="edit_history.php?id=<?php echo htmlspecialchars($record['patient_id']); ?>" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> Edit</a></td>
-                                <?php } ?>
-                            </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
+                <div class="summary">
+                    <div class="summary-item">
+                        <strong>Total Visits:</strong> <?php echo htmlspecialchars($visitCount); ?>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Most Common Diagnosis:</strong> <?php echo htmlspecialchars($commonDiagnosis); ?>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Most Common Treatment:</strong> <?php echo htmlspecialchars($commonTreatment); ?>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="analysisChart"></canvas>
+                </div>
+                <div class="chart-buttons">
+                    <button id="showBarChart" class="btn btn-primary me-2"><i class="fas fa-chart-bar"></i> Show in Bar Chart</button>
+                    <button id="showPieChart" class="btn btn-primary"><i class="fas fa-chart-pie"></i> Show in Pie Chart</button>
+                </div>
             <?php } ?>
             <div class="d-flex justify-content-between mt-4">
                 <a href="patient_dashboard.php" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
                 <?php if (in_array($role, ['Admin', 'Patient'])) { ?>
-                    <a href="analyze_history.php" class="btn btn-primary"><i class="fas fa-chart-bar"></i> Analyze My History</a>
+                    <form method="post" action="" style="display:inline;">
+                        <input type="hidden" name="generate_pdf" value="1">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Generate Report</button>
+                    </form>
                 <?php } ?>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let analysisChart;
+        const ctx = document.getElementById('analysisChart').getContext('2d');
+
+        function createBarChart() {
+            analysisChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: <?php echo json_encode($chartLabels); ?>,
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: <?php echo json_encode($chartData); ?>,
+                        backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPieChart() {
+            analysisChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: <?php echo json_encode($pieLabels); ?>,
+                    datasets: [{
+                        label: 'Diagnosis Distribution',
+                        data: <?php echo json_encode($pieData); ?>,
+                        backgroundColor: <?php echo json_encode($pieColors); ?>,
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize with bar chart
+        createBarChart();
+
+        document.getElementById('showBarChart').addEventListener('click', function() {
+            if (analysisChart) analysisChart.destroy();
+            createBarChart();
+        });
+
+        document.getElementById('showPieChart').addEventListener('click', function() {
+            if (analysisChart) analysisChart.destroy();
+            createPieChart();
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
