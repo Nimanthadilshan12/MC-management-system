@@ -1,9 +1,7 @@
 <?php
 session_start();
-
-// Check if user is logged in and is a pharmacist
-if (!isset($_SESSION['UserID']) || $_SESSION['role'] !== 'Pharmacist') {
-    header("Location: ../index.php");
+if (!isset($_SESSION['UserID']) || !in_array($_SESSION['role'], ['Patient', 'Doctor'])) {
+    header("Location: ../login.php");
     exit;
 }
 
@@ -12,27 +10,36 @@ $db = "mc1";
 $user = "root";
 $pass = "";
 $conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-$pharmacist_id = $_SESSION['UserID'];
-$message = "";
+$UserID = $_SESSION['UserID'];
+$role = $_SESSION['role'];
+echo "Role: " . htmlspecialchars($role) . "<br>";
 
-// Fetch pharmacist details
-$stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, License_No FROM pharmacists WHERE UserID = ?");
-$stmt->bind_param("s", $pharmacist_id);
-$stmt->execute();
-$pharmacist = $stmt->get_result()->fetch_assoc();
-if (!$pharmacist) {
-    die("No user found with UserID: " . htmlspecialchars($pharmacist_id));
+if ($role === 'Patient') {
+    $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Birth, Blood_Type, Gender FROM patients WHERE UserID = ?");
+} else { // Doctor
+    $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Specialization, RegNo FROM doctors WHERE UserID = ?");
+}
+
+if (!$stmt) {
+    die("Prepare failed: " . $conn->error);
+}
+$stmt->bind_param("s", $UserID);
+if (!$stmt->execute()) {
+    die("Execute failed: " . $stmt->error);
+}
+$result = $stmt->get_result();
+if (!$result) {
+    die("Query failed: " . $conn->error);
+}
+$user = $result->fetch_assoc();
+if (!$user) {
+    die("No user found with UserID: " . htmlspecialchars($UserID));
 }
 $stmt->close();
-
-// Fetch prescriptions (assuming a prescriptions table exists)
-$prescriptions = $conn->query("SELECT p.PrescriptionID, p.PatientID, p.DoctorID, p.Medication, p.Dosage, p.DateIssued 
-                              FROM prescriptions p 
-                              WHERE p.Status = 'Pending' 
-                              ORDER BY p.DateIssued DESC");
-
 $conn->close();
 ?>
 
@@ -41,7 +48,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacist Dashboard - University Medical Centre</title>
+    <title>Patient Dashboard - University Medical Centre</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -331,16 +338,11 @@ $conn->close();
         }
 
         .btn-danger {
-            display: inline-block;
-            padding: 14px 30px;
             background: linear-gradient(to right, #dc3545, #c82333);
             border: none;
             border-radius: 8px;
-            font-size: 1.1rem;
+            padding: 14px 30px;
             font-weight: 500;
-            color: white;
-            text-align: center;
-            margin: 30px auto 0;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
         }
@@ -348,17 +350,6 @@ $conn->close();
         .btn-danger:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
-        }
-
-        .table {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            margin-top: 20px;
-        }
-
-        .table th, .table td {
-            vertical-align: middle;
         }
 
         /* Animations */
@@ -415,14 +406,9 @@ $conn->close();
             .info-item {
                 min-width: 100%;
             }
-            .btn-action, .btn-danger {
+            .btn-action {
                 width: 100%;
                 text-align: center;
-            }
-            .btn-danger {
-                padding: 12px 20px;
-                font-size: 1rem;
-                margin: 20px auto 0;
             }
         }
 
@@ -454,9 +440,8 @@ $conn->close();
                 padding: 10px 15px;
             }
             .btn-action, .btn-danger {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-                margin: 15px auto 0;
+                padding: 12px 20px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -465,41 +450,70 @@ $conn->close();
     <div class="container">
         <div class="card">
             <div class="card-header">
-                <h2>Pharmacist Dashboard</h2>
+                <h2>Patient Dashboard</h2>
             </div>
             <div class="welcome-card">
                 <div class="avatar-container">
                     <div class="avatar">
-                        <i class="fas fa-prescription-bottle"></i>
+                        <i class="fas <?php echo $role == 'Patient' ? 'fa-user' : 'fa-user-md'; ?>"></i>
                     </div>
                     <div class="status-indicator"></div>
                 </div>
-                <h4 class="welcome-title">Welcome, <?php echo htmlspecialchars($pharmacist['Fullname']); ?>!</h4>
+                <h4 class="welcome-title">Welcome, <?php echo $role == 'Patient' ? htmlspecialchars($user['Fullname']) : 'Dr. ' . htmlspecialchars($user['Fullname']); ?>!</h4>
                 <div class="info-row">
-                    <div class="info-item">
-                        <i class="fas fa-envelope icon"></i>
-                        <span class="label"></span>
-                        <span class="value"><?php echo htmlspecialchars($pharmacist['Email']); ?></span>
-                    </div>
+                    <?php if ($role === 'Patient') { ?>
+                        <div class="info-item">
+                            <i class="fas fa-birthday-cake icon"></i>
+                            <span class="label">Date of Birth:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Birth']); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-tint icon"></i>
+                            <span class="label">Blood Group:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Blood_Type']); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-venus-mars icon"></i>
+                            <span class="label">Gender:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Gender']); ?></span>
+                        </div>
+                    <?php } else { ?>
+                        <div class="info-item">
+                            <i class="fas fa-stethoscope icon"></i>
+                            <span class="label">Specialization:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Specialization']); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-id-badge icon"></i>
+                            <span class="label">Reg No:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['RegNo']); ?></span>
+                        </div>
+                    <?php } ?>
                     <div class="info-item">
                         <i class="fas fa-phone icon"></i>
                         <span class="label">Contact:</span>
-                        <span class="value"><?php echo htmlspecialchars($pharmacist['Contact_No']); ?></span>
+                        <span class="value">&nbsp;<?php echo htmlspecialchars($user['Contact_No']); ?></span>
                     </div>
-                    <div class="info-item">
-                        <i class="fas fa-id-card icon"></i>
-                        <span class="label">License No:</span>
-                        <span class="value"><?php echo htmlspecialchars($pharmacist['License_No']); ?></span>
+                     </div>
+                        <div class="info-item">
+                            <i class="fas fa-user icon"></i>
+                            <span class="label">Age:</span>
+                            <span class="value"><?php echo !empty($user['Birth']) ? (new DateTime())->diff(new DateTime($user['Birth']))->y : 'N/A'; ?></span>
+                        </div>
+                        <div class="info-item">
+                        <i class="fas fa-envelope icon"></i>
+                        <span class="label">Email:</span>
+                        <span class="value">&nbsp;<?php echo htmlspecialchars($user['Email']); ?></span>
                     </div>
                 </div>
             </div>
             <div class="action-buttons">
-                <a href="view_prescriptions.php" class="btn-action"><i class="fas fa-prescription-bottle-alt me-2"></i>View Prescriptions</a>
-                <a href="add_medicine.php" class="btn-action"><i class="fas fa-plus-circle me-2"></i>Add New Medicine</a>
-                <a href="stock_management.php" class="btn-action"><i class="fas fa-warehouse me-2"></i>Stock Management</a>
-                <a href="stock_alerts.php" class="btn-action"><i class="fas fa-bell me-2"></i>Stock Alerts</a>
-                <a href="reports_analytics.php" class="btn-action"><i class="fas fa-chart-bar me-2"></i>Reports & Analytics</a>
-                <a href="edit_pharmacist_details.php" class="btn-action"><i class="fas fa-edit me-2"></i>Edit Profile</a>
+                <a href="patient_history.php?edit=<?php echo $role === 'Doctor' ? 'true' : 'false'; ?>" class="btn-action"><i class="fas fa-history me-2"></i>Patient History</a>
+                <?php if ($role === 'Patient') { ?>
+                    <a href="view_prescription.php" class="btn-action"><i class="fas fa-prescription-bottle-alt me-2"></i>View Prescription</a>
+                    <a href="edit_patient_details.php" class="btn-action"><i class="fas fa-edit me-2"></i>Edit Personal Details</a>
+                    <a href="feedback.php" class="btn-action"><i class="fas fa-comment-dots me-2"></i>Submit Feedback</a>
+                <?php } ?>
             </div>
             <a href="logout.php" class="btn btn-danger mt-4"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
         </div>
