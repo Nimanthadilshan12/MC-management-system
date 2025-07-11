@@ -16,14 +16,11 @@ if ($conn->connect_error) {
 
 $UserID = $_SESSION['UserID'];
 $role = $_SESSION['role'];
-echo "Role: " . htmlspecialchars($role) . "<br>";
-
 if ($role === 'Patient') {
     $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Birth, Blood_Type, Gender FROM patients WHERE UserID = ?");
-} else { // Doctor
+} else {
     $stmt = $conn->prepare("SELECT Fullname, Email, Contact_No, Specialization, RegNo FROM doctors WHERE UserID = ?");
 }
-
 if (!$stmt) {
     die("Prepare failed: " . $conn->error);
 }
@@ -48,11 +45,35 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Dashboard - University Medical Centre</title>
+    <title>Dashboard - University Medical Centre</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* CSS Variables for Theming */
+        :root {
+            --bg-color: #e0e7ff;
+            --text-color: #1a3556;
+            --card-bg: rgba(255, 255, 255, 0.98);
+            --primary-color: #007bff;
+            --secondary-color: #00c4b4;
+            --shadow: 0 12px 50px rgba(0, 50, 120, 0.15);
+            --info-item-bg: rgba(240, 245, 255, 0.8);
+            --header-bg: #e7f5ff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --card-bg: rgba(40, 40, 60, 0.95);
+            --primary-color: #4dabf7;
+            --secondary-color: #26de81;
+            --shadow: 0 12px 50px rgba(0, 0, 0, 0.3);
+            --info-item-bg: rgba(40, 40, 60, 0.8);
+            --header-bg: #2c3e50;
+        }
+
+        /* Global Styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -60,10 +81,13 @@ $conn->close();
         }
 
         body {
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #e0e7ff, #b9d1ff, #e6f0ff);
-            position: relative;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
+            padding-top: 60px;
+            transition: background 0.3s ease, color 0.3s ease;
+            position: relative;
             overflow-x: hidden;
         }
 
@@ -82,107 +106,187 @@ $conn->close();
             animation: gentleDrift 25s linear infinite;
         }
 
-        body::after {
-            content: '';
+        /* Header Styles */
+        .header {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at top center, rgba(255, 255, 255, 0.35), transparent 60%);
-            z-index: -1;
+            height: 60px;
+            background: var(--header-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .header-branding {
+            display: flex;
+            align-items: center;
+        }
+
+        .medical-center-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .user-name {
+            margin-right: 15px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .logout-btn {
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            color: #c82333;
+        }
+
+        /* Sidebar Toggle Button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1001;
+            transition: background 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 250px;
+            height: calc(100% - 60px);
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .sidebar a:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 250px;
+            padding: 40px 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.full-width {
+            margin-left: 0;
         }
 
         .container {
-            margin-top: 80px;
             max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 1;
+            margin: 0 auto;
         }
 
-        .logo {
-            display: block;
-            max-width: 150px;
-            margin: 0 auto 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 50, 120, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 1s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0, 50, 120, 0.15);
-        }
-
+        /* Card Styles */
         .card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.95));
+            background: var(--card-bg);
             border-radius: 20px;
-            box-shadow: 0 12px 50px rgba(0, 50, 120, 0.15), 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow);
             padding: 40px;
             position: relative;
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: fadeInUp 0.7s ease-out;
         }
 
         .card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 60px rgba(0, 50, 120, 0.2), 0 6px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 123, 255, 0.1), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: -1;
-        }
-
-        .card:hover::before {
-            opacity: 0.3;
-        }
-
-        .card-header {
-            text-align: center;
-            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 50, 120, 0.2);
         }
 
         .card-header h2 {
             font-size: 2.5rem;
             font-weight: 600;
-            background: linear-gradient(to right, #007bff, #00c4b4);
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            animation: textGlow 2s ease-in-out infinite alternate;
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         .welcome-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(235, 245, 255, 0.95));
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 30px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0, 50, 120, 0.1);
+            box-shadow: var(--shadow);
             margin-bottom: 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 0.7s ease-out;
+            position: relative;
             border: 2px solid transparent;
             background-clip: padding-box;
-        }
-
-        .welcome-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 40px rgba(0, 50, 120, 0.15);
         }
 
         .welcome-card::before {
@@ -194,7 +298,7 @@ $conn->close();
             bottom: 0;
             border-radius: 16px;
             padding: 2px;
-            background: linear-gradient(45deg, #007bff, #00c4b4, #007bff);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: destination-out;
             mask-composite: exclude;
@@ -211,14 +315,14 @@ $conn->close();
         .avatar {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #007bff, #00c4b4);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 3rem;
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+            box-shadow: var(--shadow);
             transition: transform 0.3s ease;
         }
 
@@ -234,26 +338,25 @@ $conn->close();
             height: 16px;
             background: #28a745;
             border-radius: 50%;
-            border: 2px solid white;
+            border: 2px solid var(--card-bg);
             animation: pulse 2s ease-in-out infinite;
         }
 
         .welcome-title {
             font-size: 1.8rem;
             font-weight: 600;
-            color: #1a3556;
+            color: var(--text-color);
             text-align: center;
             margin-bottom: 20px;
-            background: linear-gradient(to right, #007bff, #00c4b4);
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            animation: textGlow 2s ease-in-out infinite alternate;
         }
 
         .info-row {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             justify-content: center;
         }
@@ -261,106 +364,40 @@ $conn->close();
         .info-item {
             display: flex;
             align-items: center;
-            background: rgba(240, 245, 255, 0.8);
+            background: var(--info-item-bg);
             padding: 12px 20px;
             border-radius: 8px;
             transition: transform 0.2s ease, background 0.2s ease;
-            flex: 1;
-            min-width: 200px;
         }
 
         .info-item:hover {
             transform: translateY(-3px);
-            background: rgba(255, 255, 255, 1);
+            background: var(--card-bg);
         }
 
         .icon {
             font-size: 1.2rem;
-            color: #007bff;
+            color: var(--primary-color);
             margin-right: 10px;
         }
 
         .label {
             font-size: 0.9rem;
             font-weight: 500;
-            color: #4a5568;
+            color: var(--text-color);
             margin-right: 5px;
         }
 
         .value {
             font-size: 0.9rem;
-            color: #1a3556;
+            color: var(--text-color);
             font-weight: 400;
-        }
-
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        .btn-action {
-            display: inline-block;
-            padding: 14px 30px;
-            background: linear-gradient(to right, #007bff, #00c4b4);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-action:hover {
-            background: linear-gradient(to right, #0056b3, #00a896);
-            transform: translateY(-4px);
-            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
-        }
-
-        .btn-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.4s ease;
-        }
-
-        .btn-action:hover::before {
-            left: 100%;
-        }
-
-        .btn-danger {
-            background: linear-gradient(to right, #dc3545, #c82333);
-            border: none;
-            border-radius: 8px;
-            padding: 14px 30px;
-            font-weight: 500;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
-        }
-
-        .btn-danger:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
         }
 
         /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes textGlow {
-            from { text-shadow: 0 0 5px rgba(0, 123, 255, 0.3); }
-            to { text-shadow: 0 0 10px rgba(0, 123, 255, 0.5); }
         }
 
         @keyframes gentleDrift {
@@ -374,50 +411,37 @@ $conn->close();
             100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
         }
 
-        /* Responsive adjustments */
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .container {
-                margin-top: 60px;
-                padding: 0 15px;
+            .sidebar {
+                transform: translateX(-100%);
             }
-            .logo {
-                max-width: 120px;
+            .sidebar-toggle {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .container {
+                padding: 0 15px;
             }
             .card {
                 padding: 30px;
-                border-radius: 16px;
-            }
-            .card-header h2 {
-                font-size: 2rem;
-            }
-            .welcome-card {
-                padding: 25px;
             }
             .welcome-title {
                 font-size: 1.6rem;
             }
-            .avatar-container {
-                width: 70px;
-                height: 70px;
-            }
-            .avatar {
-                font-size: 2.5rem;
-            }
             .info-item {
                 min-width: 100%;
             }
-            .btn-action {
-                width: 100%;
-                text-align: center;
+            .medical-center-name {
+                font-size: 1.2rem;
             }
         }
 
         @media (max-width: 480px) {
             .container {
                 margin-top: 40px;
-            }
-            .logo {
-                max-width: 100px;
             }
             .card {
                 padding: 20px;
@@ -439,85 +463,119 @@ $conn->close();
             .info-item {
                 padding: 10px 15px;
             }
-            .btn-action, .btn-danger {
-                padding: 12px 20px;
+            .medical-center-name {
                 font-size: 1rem;
             }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <h2>Patient Dashboard</h2>
-            </div>
-            <div class="welcome-card">
-                <div class="avatar-container">
-                    <div class="avatar">
-                        <i class="fas <?php echo $role == 'Patient' ? 'fa-user' : 'fa-user-md'; ?>"></i>
-                    </div>
-                    <div class="status-indicator"></div>
+<body data-theme="light">
+    <header class="header">
+        <div class="header-branding">
+            <div class="medical-center-name">University Medical Centre</div>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+            <span class="user-name">Welcome, <?php echo htmlspecialchars($user['Fullname']); ?></span>
+            <a href="logout.php" class="logout-btn">Logout</a>
+        </div>
+    </header>
+    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="sidebar" id="sidebar">
+        <ul>
+            <li><a href="patient_history.php?edit=<?php echo $role === 'Doctor' ? 'true' : 'false'; ?>"><i class="fas fa-history"></i> Patient History</a></li>
+            <?php if ($role === 'Patient') { ?>
+                <li><a href="view_prescription.php"><i class="fas fa-prescription-bottle-alt"></i> View Prescription</a></li>
+                <li><a href="edit_patient_details.php"><i class="fas fa-edit"></i> Edit Details</a></li>
+                <li><a href="submit_feedback.php"><i class="fas fa-comment-dots"></i> Submit Feedback</a></li>
+            <?php } ?>
+            <li><a href="book_appointment.php"><i class="fas fa-calendar-plus"></i> Book Appointment</a></li>
+        </ul>
+    </div>
+    <div class="main-content" id="main-content">
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h2><?php echo $role === 'Patient' ? 'Patient' : 'Doctor'; ?> Dashboard</h2>
                 </div>
-                <h4 class="welcome-title">Welcome, <?php echo $role == 'Patient' ? htmlspecialchars($user['Fullname']) : 'Dr. ' . htmlspecialchars($user['Fullname']); ?>!</h4>
-                <div class="info-row">
-                    <?php if ($role === 'Patient') { ?>
-                        <div class="info-item">
-                            <i class="fas fa-birthday-cake icon"></i>
-                            <span class="label">Date of Birth:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['Birth']); ?></span>
+                <div class="welcome-card">
+                    <div class="avatar-container">
+                        <div class="avatar">
+                            <i class="fas <?php echo $role == 'Patient' ? 'fa-user' : 'fa-user-md'; ?>"></i>
                         </div>
-                        <div class="info-item">
-                            <i class="fas fa-tint icon"></i>
-                            <span class="label">Blood Group:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['Blood_Type']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-venus-mars icon"></i>
-                            <span class="label">Gender:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['Gender']); ?></span>
-                        </div>
-                    <?php } else { ?>
-                        <div class="info-item">
-                            <i class="fas fa-stethoscope icon"></i>
-                            <span class="label">Specialization:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['Specialization']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-id-badge icon"></i>
-                            <span class="label">Reg No:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['RegNo']); ?></span>
-                        </div>
-                    <?php } ?>
-                    <div class="info-item">
-                        <i class="fas fa-phone icon"></i>
-                        <span class="label">Contact:</span>
-                        <span class="value">&nbsp;<?php echo htmlspecialchars($user['Contact_No']); ?></span>
+                        <div class="status-indicator"></div>
                     </div>
-                     </div>
+                    <h4 class="welcome-title">Welcome, <?php echo $role == 'Patient' ? htmlspecialchars($user['Fullname']) : 'Dr. ' . htmlspecialchars($user['Fullname']); ?>!</h4>
+                    <div class="info-row">
+                        <?php if ($role === 'Patient') { ?>
+                            <div class="info-item">
+                                <i class="fas fa-birthday-cake icon"></i>
+                                <span class="label">Date of Birth:</span>
+                                <span class="value"><?php echo htmlspecialchars($user['Birth']); ?></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-tint icon"></i>
+                                <span class="label">Blood Group:</span>
+                                <span class="value"><?php echo htmlspecialchars($user['Blood_Type']); ?></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-venus-mars icon"></i>
+                                <span class="label">Gender:</span>
+                                <span class="value"><?php echo htmlspecialchars($user['Gender']); ?></span>
+                            </div>
+                        <?php } else { ?>
+                            <div class="info-item">
+                                <i class="fas fa-stethoscope icon"></i>
+                                <span class="label">Specialization:</span>
+                                <span class="value"><?php echo htmlspecialchars($user['Specialization']); ?></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-id-badge icon"></i>
+                                <span class="label">Reg No:</span>
+                                <span class="value"><?php echo htmlspecialchars($user['RegNo']); ?></span>
+                            </div>
+                        <?php } ?>
+                        <div class="info-item">
+                            <i class="fas fa-phone icon"></i>
+                            <span class="label">Contact:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Contact_No']); ?></span>
+                        </div>
                         <div class="info-item">
                             <i class="fas fa-user icon"></i>
                             <span class="label">Age:</span>
                             <span class="value"><?php echo !empty($user['Birth']) ? (new DateTime())->diff(new DateTime($user['Birth']))->y : 'N/A'; ?></span>
                         </div>
                         <div class="info-item">
-                        <i class="fas fa-envelope icon"></i>
-                        <span class="label">Email:</span>
-                        <span class="value">&nbsp;<?php echo htmlspecialchars($user['Email']); ?></span>
+                            <i class="fas fa-envelope icon"></i>
+                            <span class="label">Email:</span>
+                            <span class="value"><?php echo htmlspecialchars($user['Email']); ?></span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="action-buttons">
-                <a href="patient_history.php?edit=<?php echo $role === 'Doctor' ? 'true' : 'false'; ?>" class="btn-action"><i class="fas fa-history me-2"></i>Patient History</a>
-                <?php if ($role === 'Patient') { ?>
-                    <a href="view_prescription.php" class="btn-action"><i class="fas fa-prescription-bottle-alt me-2"></i>View Prescription</a>
-                    <a href="edit_patient_details.php" class="btn-action"><i class="fas fa-edit me-2"></i>Edit Personal Details</a>
-                    <a href="feedback.php" class="btn-action"><i class="fas fa-comment-dots me-2"></i>Submit Feedback</a>
-                <?php } ?>
-            </div>
-            <a href="logout.php" class="btn btn-danger mt-4"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('full-width');
+        }
+
+        function toggleTheme() {
+            var body = document.body;
+            var currentTheme = body.getAttribute('data-theme');
+            var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            var savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        });
+    </script>
 </body>
 </html>
