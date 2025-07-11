@@ -271,7 +271,18 @@ $conn->close();
             transition: left 0.4s ease;
         }
 
-        .btn-action:hover::before {
+        .btn-action:not(.no-hover)::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.4s ease;
+        }
+
+        .btn-action:not(.no-hover):hover::before {
             left: 100%;
         }
 
@@ -296,6 +307,7 @@ $conn->close();
             gap: 15px;
             justify-content: center;
             margin-top: 30px;
+            margin-bottom: 20px;
         }
 
         .table {
@@ -405,25 +417,22 @@ $conn->close();
         <div class="card">
             <div class="card-header">
                 <h2>Stock Management</h2>
+                <h4>Available Medicine Stock</h4>
             </div>
             <?php if ($message): ?>
                 <div class="message <?php echo strpos($message, 'successfully') !== false ? 'success' : 'error'; ?>">
                     <?php echo htmlspecialchars($message); ?>
                 </div>
             <?php endif; ?>
-            <div class="action-buttons">
-                <a href="add_medicine.php" class="btn-action"><i class="fas fa-plus me-2"></i>Add Medicine</a>
-                <a href="pharmacist_dashboard.php" class="btn-action"><i class="fas fa-home me-2"></i>Back to Dashboard</a>
-            </div>
             <?php if ($medicines->num_rows > 0): ?>
                 <table class="table mt-4">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Stock Level</th>
+                            <th>Quantity</th>
                             <th>Expiry Date</th>
-                            <th>Actions</th>
+                            <th>Remove Quantity</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -455,6 +464,10 @@ $conn->close();
             <?php else: ?>
                 <p class="text-center mt-4">No medicines found in the inventory.</p>
             <?php endif; ?>
+            <div class="action-buttons">
+                <a href="add_medicine.php" class="btn-action"><i class="fas fa-plus me-2"></i>Add Medicine</a>
+                <a href="pharmacist_dashboard.php" class="btn-action"><i class="fas fa-home me-2"></i>Back to Dashboard</a>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
