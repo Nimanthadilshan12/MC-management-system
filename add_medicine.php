@@ -387,7 +387,7 @@ $conn->close();
                     <input type="text" id="Name" name="Name" value="<?php echo isset($_POST['Name']) ? htmlspecialchars($_POST['Name']) : ''; ?>" required>
                 </div>
                 <div class="form-group">
-                    <label for="Quantity">Stock Level</label>
+                    <label for="Quantity">Quantity</label>
                     <i class="fas fa-box"></i>
                     <input type="number" id="Quantity" name="Quantity" value="<?php echo isset($_POST['Quantity']) ? htmlspecialchars($_POST['Quantity']) : ''; ?>" min="0" required>
                 </div>
