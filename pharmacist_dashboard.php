@@ -1,4 +1,4 @@
-<?php
+?php
 session_start();
 
 // Check if user is logged in and is a pharmacist
@@ -495,7 +495,6 @@ $conn->close();
             </div>
             <div class="action-buttons">
                 <a href="view_prescriptions.php" class="btn-action"><i class="fas fa-prescription-bottle-alt me-2"></i>View Prescriptions</a>
-                <a href="add_medicine.php" class="btn-action"><i class="fas fa-plus-circle me-2"></i>Add New Medicine</a>
                 <a href="stock_management.php" class="btn-action"><i class="fas fa-warehouse me-2"></i>Stock Management</a>
                 <a href="stock_alerts.php" class="btn-action"><i class="fas fa-bell me-2"></i>Stock Alerts</a>
                 <a href="reports_analytics.php" class="btn-action"><i class="fas fa-chart-bar me-2"></i>Reports & Analytics</a>
