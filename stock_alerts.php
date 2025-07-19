@@ -412,7 +412,7 @@ $conn->close();
                 <thead class="table-light">
                     <tr>
                         <th>#ID</th><th>Patient</th><th>Doctor</th>
-                        <th>Medication</th><th>Dosage</th><th>Date</th><th>Status</th>
+                        <th>Medication</th><th>Dosage</th><th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -428,7 +428,7 @@ $conn->close();
                             <?php endif; ?>
                             </td>
                             <td><?php echo date("d M Y", strtotime($row['DateIssued'])); ?></td>
-                            <td><span class="status-pending">Pending</span></td>
+                           
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
