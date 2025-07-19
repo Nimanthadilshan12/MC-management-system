@@ -231,7 +231,7 @@ $conn->close();
                                 <th>Medication</th>
                                 <th>Dosage</th>
                                 <th>Date Issued</th>
-                                <th>Status</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -243,7 +243,7 @@ $conn->close();
                                     <td><?php echo htmlspecialchars($row['Medication']); ?></td>
                                     <td><?php echo htmlspecialchars($row['Dosage']); ?></td>
                                     <td><?php echo date("d M Y", strtotime($row['DateIssued'])); ?></td>
-                                    <td><span class="badge badge-pill status-pending">Pending</span></td>
+                                    
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
