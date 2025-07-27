@@ -11,7 +11,7 @@ $resources = [
         'ResourceType' => 'Article',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-06-01 10:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1516321310764-2b6c5e48c5e8'
+        'Image' => 'https://providencemedicalassociates.org/wp-content/uploads/2023/07/stress-1.jpg'
     ],
     [
         'Title' => 'Nutrition for Busy Students',
@@ -27,7 +27,7 @@ $resources = [
         'ResourceType' => 'Article',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-06-10 14:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1506459225024-842ab81b1956'
+        'Image' => 'https://miro.medium.com/v2/resize:fit:800/1*zxsxfqpY265ttrOcGC7w1Q.jpeg'
     ],
     [
         'Title' => 'Preventing Common Colds',
@@ -35,7 +35,7 @@ $resources = [
         'ResourceType' => 'Article',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-06-15 16:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1583324116142-9e83b1b3f5bc'
+        'Image' => 'https://post.healthline.com/wp-content/uploads/2021/12/at-home-cold-remedies-1296x807.png'
     ],
     [
         'Title' => 'Managing Anxiety Disorders',
@@ -51,7 +51,7 @@ $resources = [
         'ResourceType' => 'Article',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-06-25 11:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1612278675550-1f4b4a8e301d'
+        'Image' => 'https://media.springernature.com/lw685/springer-static/image/chp%3A10.1007%2F978-3-031-24942-6_9/MediaObjects/523392_1_En_9_Fig1_HTML.png'
     ],
     // Videos
     [
@@ -100,7 +100,7 @@ $resources = [
         'ResourceType' => 'Video',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-07-02 08:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1516321310764-2b6c5e48c5e8'
+        'Image' => 'https://cdn.prod.website-files.com/61cb7a7d475583f9b7aeec64/647a07c5c410a3e52a610b3c_How%20to%20manage%20exam%20stress.png'
     ],
     // Tips
     [
@@ -109,7 +109,7 @@ $resources = [
         'ResourceType' => 'Tip',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-06-02 08:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1551218372-5e6c0e7d6076'
+        'Image' => 'https://atlas-ips.com/media/83422/adobestock_337016516.png?width=500&height=500'
     ],
     [
         'Title' => 'Healthy Snacking',
@@ -125,7 +125,7 @@ $resources = [
         'ResourceType' => 'Tip',
         'CreatedByName' => 'Health Team',
         'CreatedDate' => '2025-06-12 15:00:00',
-        'Image' => 'https://images.unsplash.com/photo-1506126279646-a697353d3166'
+        'Image' => 'https://www.zenya.in/cdn/shop/articles/Tranquil_Indoor_Scene_with_Woman_and_Flowers_40949d75-6862-4559-bb52-5df162a4df9c.jpg?v=1749554711&width=1100'
     ],
     [
         'Title' => 'Posture Tip',
@@ -161,302 +161,347 @@ $filtered_resources = $filter === 'All' ? $resources : array_filter($resources, 
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Resources - University Medical Centre</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Health Resources - University of Ruhuna Medical Centre</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet"> 
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- Inline CSS for Page Header and Dark Mode -->
     <style>
+        /* Color Variables */
         :root {
-            --primary: #7c3aed;
-            --secondary: #ec4899;
-            --accent: #06b6d4;
-            --text: #1e293b;
-            --background: #f1f5f9;
-            --success: #10b981;
-            --error: #ef4444;
+            --primary: rgb(86, 85, 183); /* Purple, added to match login.php, about.html, contact.html */
+            --secondary: #ec4899; /* Pink, added to match login.php, about.html */
+            --accent: #06b6d4; /* Cyan */
+            --success: #10b981; /* Green */
+            --error: #ef4444; /* Red */
+            --background: #ffffff;
+            --text: #000000;
+            --light-bg: #f8f9fa;
+            --dark-bg: rgb(8, 50, 92);
+            --text-light: #ffffff;
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #a5b4fc,rgb(198, 168, 249), #22d3ee);
-            min-height: 100vh;
-            padding: 100px 20px;
-            position: relative;
-            overflow-x: hidden;
+        .dark-mode {
+            --background: #1a1a1a;
+            --text: #e0e0e0;
+            --light-bg: #2c2c2c;
+            --dark-bg: rgb(56, 41, 150);
+            --text-light: #e0e0e0;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528');
-            background-repeat: no-repeat;
-            background-position: center;
+        /* Original Page Header Styles */
+        .page-header {
+            background-image: url('https://thumbs.dreamstime.com/b/top-view-healthy-lifestyles-concept-sport-equipments-fresh-foods-wood-background-web-banner-top-view-healthy-137377739.jpg');
             background-size: cover;
-            opacity: 0.1;
-            z-index: -1;
-            animation: zoomInOut 20s ease-in-out infinite;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4), transparent 70%);
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
+            background-position: center;
+            background-repeat: no-repeat;
             position: relative;
-            z-index: 1;
         }
 
-        .logo {
-            display: block;
-            max-width: 200px;
-            margin: 0 auto 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 50, 120, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 1s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0, 50, 120, 0.15);
-        }
-
-        h1 {
-            font-family: 'Rubik', sans-serif;
-            font-size: 3.8rem;
-            font-weight: 700;
-            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 0.8px;
-            margin-bottom: 20px;
-            animation: textPop 1.5s ease-in-out infinite alternate;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .filter-buttons {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .resource-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.95));
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 50, 120, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-            animation: fadeInUp 1.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .resource-card img {
-            width: 150px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            transition: transform 0.3s ease;
-        }
-
-        .resource-card img:hover {
-            transform: scale(1.1);
-        }
-
-        .resource-content {
-            flex: 1;
-            text-align: left;
-        }
-
-        .resource-card h3 {
-            font-family: 'Rubik', sans-serif;
-            font-size: 1.5rem;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .resource-card p {
-            font-size: 1rem;
-            color: var(--text);
-            margin-bottom: 10px;
-            animation: popIn 0.5s ease;
-        }
-
-        .resource-card .meta {
-            font-size: 0.9rem;
-            color: var(--text);
-        }
-
-        .btn-primary {
-            display: inline-block;
-            padding: 16px 40px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #fff;
-            text-decoration: none;
-            border-radius: 12px;
-            font-size: 1.3rem;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-            position: relative;
-            overflow: hidden;
-            margin: 20px auto;
-        }
-
-        .btn-primary::before {
+        .page-header::before {
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.4s ease;
+            z-index: 1;
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(90deg, #6d28d9, #db2777);
-            transform: translateY(-4px);
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+        .page-header .container {
+            position: relative;
+            z-index: 2;
         }
 
-        .btn-primary:hover::before {
-            left: 100%;
+        .page-header h1, .page-header .breadcrumb-item a, .page-header .breadcrumb-item {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+        /* Dark Mode Styles */
+        body {
+            background-color: var(--background);
+            color: var(--text);
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .bg-light {
+            background-color: var(--light-bg) !important;
         }
 
-        @keyframes textPop {
-            from { transform: scale(1); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-            to { transform: scale(1.02); text-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); }
+        .bg-dark {
+            background-color: var(--dark-bg) !important;
         }
 
-        @keyframes zoomInOut {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .text-light {
+            color: var(--text-light) !important;
         }
 
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .text-primary {
+            color: var(--primary) !important;
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 80px 15px;
-            }
-            .logo {
-                max-width: 150px;
-            }
-            h1 {
-                font-size: 3rem;
-            }
-            .btn-primary {
-                padding: 14px 30px;
-                font-size: 1.2rem;
-            }
-            .resource-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .resource-card img {
-                width: 100%;
-                height: auto;
-                max-height: 150px;
-            }
+        .navbar.bg-white {
+            background-color: var(--background) !important;
         }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 60px 10px;
-            }
-            .logo {
-                max-width: 120px;
-            }
-            h1 {
-                font-size: 2.5rem;
-            }
-            .btn-primary {
-                padding: 12px 25px;
-                font-size: 1.1rem;
-            }
+        .navbar-light .navbar-nav .nav-link {
+            color: var(--text);
+        }
+
+        .dark-mode .page-header::before {
+            background: rgba(0, 0, 0, 0.5); /* Darker overlay for better header contrast */
+        }
+
+        .dark-mode .page-header h1, .dark-mode .page-header .breadcrumb-item a, .dark-mode .page-header .breadcrumb-item {
+            color: var(--text-light) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark-mode h1, .dark-mode h4, .dark-mode .border.rounded-pill {
+            color: var(--text-light) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark-mode .service-item {
+            background-color: var(--light-bg);
+            color: var(--text-light);
+        }
+
+        .dark-mode .service-item p, .dark-mode .service-item .text-muted {
+            color: var(--text-light) !important;
+        }
+
+        .dark-mode .service-item a {
+            color: var(--accent);
+        }
+
+        .dark-mode .service-item a:hover {
+            color: var(--success);
+        }
+
+        .dark-mode .btn.btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: var(--text-light);
+        }
+
+        .dark-mode .btn.btn-primary.active {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--text-light);
+        }
+
+        .dark-mode .btn.btn-outline-light.btn-social {
+            background-color: var(--light-bg);
+            color: var(--text-light);
+        }
+
+        .dark-mode .border {
+            border-color: var(--text-light) !important;
+        }
+
+        .dark-mode .text-muted {
+            color: var(--text-light) !important;
+        }
+
+        #darkModeToggle i {
+            font-size: 1.2rem;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <img src="https://upload.wikimedia.org/wikipedia/en/2/2e/University_of_Ruhuna_logo.png" alt="University of Ruhuna Logo" class="logo">
-        <h1 style="text-align: center;">Health Resources</h1>
-        <div class="filter-buttons">
-            <a href="?type=All" class="filter-btn <?php echo $filter === 'All' ? 'active' : ''; ?>">All</a>
-            <a href="?type=Article" class="filter-btn <?php echo $filter === 'Article' ? 'active' : ''; ?>">Articles</a>
-            <a href="?type=Video" class="filter-btn <?php echo $filter === 'Video' ? 'active' : ''; ?>">Videos</a>
-            <a href="?type=Tip" class="filter-btn <?php echo $filter === 'Tip' ? 'active' : ''; ?>">Tips</a>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
         </div>
-        <?php if (empty($filtered_resources)): ?>
-            <p style="animation: popIn 0.5s ease;">No resources available.</p>
-        <?php else: ?>
-            <?php foreach ($filtered_resources as $resource): ?>
-                <div class="resource-card">
-                    <img src="<?php echo htmlspecialchars($resource['Image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($resource['Title'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <div class="resource-content">
-                        <h3><?php echo htmlspecialchars($resource['Title'], ENT_QUOTES, 'UTF-8'); ?></h3>
-                        <p><?php echo $resource['Content']; // Content includes safe HTML (links) ?></p>
-                        <p class="meta">Type: <?php echo htmlspecialchars($resource['ResourceType'], ENT_QUOTES, 'UTF-8'); ?> | Created by: <?php echo htmlspecialchars($resource['CreatedByName'], ENT_QUOTES, 'UTF-8'); ?> | Date: <?php echo htmlspecialchars($resource['CreatedDate'], ENT_QUOTES, 'UTF-8'); ?></p>
+    </div>
+    <!-- Spinner End -->
+
+    
+
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top p-0 wow fadeIn" data-wow-delay="0.1s">
+        <a href="index.php" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+            <h1 class="m-0 text-primary"><i class="far fa-hospital me-3"></i>Medical Centre - University of Ruhuna</h1>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto p-4 p-lg-0">
+                <a href="index.php" class="nav-item nav-link ">Home</a>
+                <a href="about.php" class="nav-item nav-link">About</a>
+                <a href="health_resources.php" class="nav-item nav-link active">Health Resources</a>
+                <a href="feature.php" class="nav-item nav-link">Opening Information</a>
+                <a href="contact.php" class="nav-item nav-link">Contact</a>
+                <button id="darkModeToggle" class="btn btn-primary rounded-circle ms-3" style="width: 40px; height: 40px;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <a href="login.php" class="btn btn-primary rounded-0 py-4 px-lg-5 d-none d-lg-block">LogIn/SignUp<i class="fa fa-arrow-right ms-3"></i></a>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header py-5 mb-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <h1 class="display-3 text-white mb-3 animated slideInDown">Health Resources</h1>
+            <nav aria-label="breadcrumb animated slideInDown">
+                
+            </nav>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Health Resources Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                <p class="d-inline-block border rounded-pill py-1 px-4">Health Resources</p>
+                <h1>Explore Our Health Resources</h1>
+            </div>
+            <div class="row g-4 mb-5">
+                <div class="col-12 text-center">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="?type=All" class="btn btn-primary py-2 px-4 <?php echo $filter === 'All' ? 'active' : ''; ?>">All</a>
+                        <a href="?type=Article" class="btn btn-primary py-2 px-4 <?php echo $filter === 'Article' ? 'active' : ''; ?>">Articles</a>
+                        <a href="?type=Video" class="btn btn-primary py-2 px-4 <?php echo $filter === 'Video' ? 'active' : ''; ?>">Videos</a>
+                        <a href="?type=Tip" class="btn btn-primary py-2 px-4 <?php echo $filter === 'Tip' ? 'active' : ''; ?>">Tips</a>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-        <a class="btn btn-primary" href="index.php"><i class="fas fa-arrow-left me-2"></i>Back to Home</a>
+            </div>
+            <?php if (empty($filtered_resources)): ?>
+                <div class="text-center">
+                    <p>No resources available.</p>
+                </div>
+            <?php else: ?>
+                <div class="row g-4">
+                    <?php foreach ($filtered_resources as $resource): ?>
+                        <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                            <div class="service-item rounded overflow-hidden">
+                                <img class="img-fluid" src="<?php echo htmlspecialchars($resource['Image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($resource['Title'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <div class="p-4">
+                                    <h4 class="mb-3"><?php echo htmlspecialchars($resource['Title'], ENT_QUOTES, 'UTF-8'); ?></h4>
+                                    <p><?php echo $resource['Content']; // Content includes safe HTML (links) ?></p>
+                                    <p class="text-muted">Type: <?php echo htmlspecialchars($resource['ResourceType'], ENT_QUOTES, 'UTF-8'); ?> | Created by: <?php echo htmlspecialchars($resource['CreatedByName'], ENT_QUOTES, 'UTF-8'); ?> | Date: <?php echo htmlspecialchars($resource['CreatedDate'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Health Resources End -->
+
+    <!-- Footer Start -->
+    <div class="container-fluid bg-dark text-light footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="text-light mb-4">Address</h5>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>University of Ruhuna, Matara, Sri Lanka</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+94 41 2222681</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>medicalcentre@ruh.ac.lk</p>
+                    <div class="d-flex pt-2">
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-youtube"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="text-light mb-4">Quick Links</h5>
+                    <a class="btn btn-link" href="login.php">LogIn</a>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="health_resources.php">Health Resources</a>
+                    <a class="btn btn-link" href="feature.php">Opening Information</a>
+                    <a class="btn btn-link" href="contact.html">Contact Us</a>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="copyright">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        © <a class="border-bottom" href="#">Medical Centre-UOR</a>, All Right Reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/counterup/counterup.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+    <script>
+        // Dark Mode Toggle Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.documentElement;
+
+            // Check for saved preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                if (body.classList.contains('dark-mode')) {
+                    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
