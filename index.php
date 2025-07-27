@@ -8,6 +8,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Set consistent collation for the query
+$conn->query("SET collation_connection = 'utf8mb4_unicode_ci'");
+
 // Fetch settings
 $settings = [];
 $result = $conn->query("SELECT setting_key, setting_value FROM settings");
@@ -17,6 +20,33 @@ if ($result) {
     }
 } else {
     die("Settings query failed: " . $conn->error);
+}
+
+// Fetch all patient feedbacks
+$feedbacks = [];
+$error_message = '';
+$stmt = $conn->prepare("
+    SELECT f.feedback_text, f.submit_date, p.Faculty 
+    FROM feedback f 
+    LEFT JOIN patients p ON f.user_id = p.UserID 
+    ORDER BY f.submit_date DESC
+");
+if ($stmt === false) {
+    // Fallback query if the original query fails
+    $error_message = "Error preparing query: " . $conn->error . ". Displaying feedback without faculty information.";
+    $stmt = $conn->prepare("
+        SELECT feedback_text, submit_date, NULL as Faculty 
+        FROM feedback 
+        ORDER BY submit_date DESC
+    ");
+}
+if ($stmt) {
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $feedbacks = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+} else {
+    $error_message = "Error preparing fallback query: " . $conn->error;
 }
 $conn->close();
 
@@ -30,444 +60,533 @@ $operation_days_text = implode(', ', array_filter($operation_days_text));
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University Medical Centre</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Medical Centre - University of Ruhuna</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+    
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet"> 
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- Inline CSS for Dark Mode -->
     <style>
         :root {
-            --primary: #7c3aed;
-            --secondary: #ec4899;
-            --accent: #06b6d4;
-            --text: #1e293b;
-            --background: #f1f5f9;
-            --success: #10b981;
-            --error: #ef4444;
+            --primary: rgb(86, 85, 183); /* Purple, added to match login.php, about.html, contact.html, health_resources.php */
+            --secondary: #ec4899; /* Pink */
+            --accent: #06b6d4; /* Cyan */
+            --success: #10b981; /* Green */
+            --error: #ef4444; /* Red */
+            --background: #ffffff;
+            --text: #000000;
+            --light-bg: #f8f9fa;
+            --dark-bg: rgb(8, 50, 92);
+            --text-light: #ffffff;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        .dark-mode {
+            --background: #1a1a1a;
+            --text: #e0e0e0;
+            --light-bg: #2c2c2c;
+            --dark-bg: rgb(56, 41, 150);
+            --text-light: #e0e0e0;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #a5b4fc,rgb(198, 168, 249), #22d3ee);
-            text-align: center;
-            padding: 100px 20px;
-            position: relative;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: cover;
-            opacity: 0.1;
-            z-index: -1;
-            animation: zoomInOut 20s ease-in-out infinite;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4), transparent 70%);
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .logo {
-            display: block;
-            max-width: 200px;
-            margin: 0 auto 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 50, 120, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 1s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0, 50, 120, 0.15);
-        }
-
-        h1 {
-            font-family: 'Rubik', sans-serif;
-            font-size: 3.8rem;
-            font-weight: 700;
-            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 0.8px;
-            margin-bottom: 20px;
-            animation: textPop 1.5s ease-in-out infinite alternate;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        p {
-            font-size: 1.6rem;
+            background-color: var(--background);
             color: var(--text);
-            font-weight: 400;
-            line-height: 1.7;
-            max-width: 650px;
-            margin: 0 auto 30px;
-            animation: popIn 0.5s ease;
         }
 
-        .btn-primary {
-            display: inline-block;
-            padding: 16px 40px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #fff;
-            text-decoration: none;
-            border-radius: 12px;
-            font-size: 1.3rem;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-            position: relative;
-            overflow: hidden;
-            margin: 10px;
+        .bg-light {
+            background-color: var(--light-bg) !important;
         }
 
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.4s ease;
+        .bg-dark {
+            background-color: var(--dark-bg) !important;
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(90deg, #6d28d9, #db2777);
-            transform: translateY(-4px);
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+        .text-light {
+            color: var(--text-light) !important;
         }
 
-        .btn-primary:hover::before {
-            left: 100%;
+        .text-primary {
+            color: var(--primary) !important;
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+        .navbar.bg-white {
+            background-color: var(--background) !important;
         }
 
-        .feature-section {
-            margin-top: 60px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .feature-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.95));
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 50, 120, 0.1);
-            padding: 20px;
-            width: 250px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 1.4s ease 0.4s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 40px rgba(0, 50, 120, 0.15);
-        }
-
-        .feature-card i {
-            font-size: 2.5rem;
-            color: var(--accent);
-            margin-bottom: 15px;
-        }
-
-        .feature-card h3 {
-            font-family: 'Rubik', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 600;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .feature-card p {
-            font-size: 1rem;
+        .navbar-light .navbar-nav .nav-link {
             color: var(--text);
-            margin: 0;
         }
 
-        .settings-section {
-            margin-top: 40px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.95));
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 50, 120, 0.15), 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 30px;
-            animation: fadeInUp 1.6s ease 0.6s;
-            position: relative;
-            overflow: hidden;
+        .header.bg-primary {
+            background-color: var(--primary) !important;
         }
 
-        .settings-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            z-index: 1;
+        .feature.bg-primary {
+            background-color: var(--primary) !important;
         }
 
-        .settings-section h3 {
-            font-family: 'Rubik', sans-serif;
-            font-size: 1.7rem;
-            font-weight: 600;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: textPop 1.5s ease-in-out infinite alternate;
+        .team-item .team-text.bg-light {
+            background-color: var(--light-bg) !important;
         }
 
-        .settings-section h3 i {
-            font-size: 2rem;
+        .testimonial-item .testimonial-text.bg-light {
+            background-color: var(--light-bg) !important;
+        }
+
+        .footer.bg-dark {
+            background-color: var(--dark-bg) !important;
+        }
+
+        .dark-mode .btn.btn-outline-light.btn-social {
+            background-color: var(--light-bg);
+            color: var(--text-light);
+        }
+
+        .dark-mode .btn.btn-outline-light.btn-social:hover {
+            background-color: var(--accent);
+            color: var(--text-light);
+        }
+
+        .dark-mode .btn.btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: var(--text-light);
+        }
+
+        .dark-mode .border-light {
+            border-color: var(--text-light) !important;
+        }
+
+        .dark-mode .owl-carousel-text {
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--text-light) !important;
+        }
+
+        .dark-mode .header.bg-primary, .dark-mode .feature.bg-primary {
+            background-color: rgb(56, 55, 120) !important; /* Darker shade of primary for better contrast */
+        }
+
+        .dark-mode h1, .dark-mode h2, .dark-mode h5, .dark-mode .border.rounded-pill {
+            color: var(--text-light) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark-mode .feature-text, .dark-mode .testimonial-text, .dark-mode .settings-content {
+            color: var(--text-light) !important;
+        }
+
+        .dark-mode .feature-text p, .dark-mode .testimonial-text p, .dark-mode .settings-content p, .dark-mode .text-light, .dark-mode .text-white {
+            color: var(--text-light) !important;
+        }
+
+        .dark-mode .feature-text a, .dark-mode .testimonial-text a, .dark-mode .settings-content a {
             color: var(--accent);
-            animation: pulseIcon 1.5s ease-in-out infinite;
         }
 
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 0 10px;
+        .dark-mode .feature-text a:hover, .dark-mode .testimonial-text a:hover, .dark-mode .settings-content a:hover {
+            color: var(--success);
         }
 
-        .settings-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .dark-mode .fst-italic {
+            color: var(--text-light) !important;
+        }
+
+        #darkModeToggle i {
+            font-size: 1.2rem;
+        }
+
+        .testimonial-item .testimonial-text {
+            background: #f8f9fa;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
-            border: 1px solid rgba(0, 123, 255, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-
-        .settings-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(0, 50, 120, 0.1);
-            background: rgba(0, 123, 255, 0.05);
-        }
-
-        .settings-item i {
-            font-size: 1.5rem;
-            color: var(--accent);
-            transition: transform 0.3s ease;
-        }
-
-        .settings-item:hover i {
-            transform: scale(1.2);
-        }
-
-        .settings-content {
-            flex: 1;
-        }
-
-        .settings-label {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 5px;
-        }
-
-        .settings-value {
-            font-size: 1.1rem;
-            color: var(--text);
-            font-weight: 400;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes textPop {
-            from { transform: scale(1); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-            to { transform: scale(1.02); text-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); }
-        }
-
-        @keyframes zoomInOut {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes pulseIcon {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            body {
-                padding: 80px 15px;
-            }
-            .logo {
-                max-width: 150px;
-                margin-bottom: 15px;
-            }
-            h1 {
-                font-size: 3rem;
-            }
-            p {
-                font-size: 1.4rem;
-                max-width: 90%;
-            }
-            .btn-primary {
-                padding: 14px 30px;
-                font-size: 1.2rem;
-            }
-            .feature-card {
-                width: 100%;
-                max-width: 300px;
-            }
-            .settings-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            .settings-section {
-                padding: 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 60px 10px;
-            }
-            .logo {
-                max-width: 120px;
-                margin-bottom: 10px;
-            }
-            h1 {
-                font-size: 2.5rem;
-            }
-            p {
-                font-size: 1.2rem;
-            }
-            .btn-primary {
-                padding: 12px 25px;
-                font-size: 1.1rem;
-            }
-            .feature-section, .settings-section {
-                margin-top: 40px;
-            }
-            .settings-section h3 {
-                font-size: 1.5rem;
-            }
-            .settings-item i {
-                font-size: 1.3rem;
-            }
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="https://upload.wikimedia.org/wikipedia/en/2/2e/University_of_Ruhuna_logo.png" alt="University of Ruhuna Logo" class="logo">
-        <h1 style="display:">Welcome!</h1>
-        <h1>University of Ruhuna Medical Centre</h1>
-        <p>Your health is our priority. Access top-notch medical services and manage your health with ease.</p>
-        <a class="btn btn-primary" href="login.php"><i class="fas fa-sign-in-alt me-2"></i>Go to Login/Register</a>
-        <a class="btn btn-primary" href="aboutus.html"><i class="fas fa-info-circle me-2"></i>About Us</a>
-        <a class="btn btn-primary" href="health_resources.php"><i class="fas fa-book-medical me-2"></i>Health Resources</a>
-        
-        <div class="feature-section">
-            <div class="feature-card">
-                <i class="fas fa-user-md"></i>
-                <h3>Expert Care</h3>
-                <p>Connect with experienced doctors.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-prescription-bottle-alt"></i>
-                <h3>Pharmacy Services</h3>
-                <p>Easy access to medications and prescriptions.</p>
-            </div>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
         </div>
+    </div>
+    <!-- Spinner End -->
 
-        <div class="settings-section">
-            <h3><i class="fas fa-info-circle"></i> Medical Centre Information</h3>
-            <div class="settings-grid">
-                <div class="settings-item">
-                    <i class="fas fa-clock"></i>
+    <!-- Topbar Start -->
+    <div class="container-fluid bg-light p-0 wow fadeIn" data-wow-delay="0.1s">
+        <div class="row gx-0 d-none d-lg-flex">
+            <div class="col-lg-7 px-5 text-start">
+                <div class="h-100 d-inline-flex align-items-center py-3 me-4">
+                    <small class="fa fa-map-marker-alt text-primary me-2"></small>
+                    <small>Matara, Sri Lanka</small>
+                </div>
+                <div class="h-100 d-inline-flex align-items-center py-3">
+                    <small class="far fa-clock text-primary me-2"></small>
                     <div class="settings-content">
-                        <div class="settings-label">Opening Hours</div>
-                        <div class="settings-value"><?php echo htmlspecialchars($settings['opening_time'] . ' - ' . $settings['closing_time']); ?></div>
+                        <div class="settings-value">Opening Hours : <?php echo htmlspecialchars($settings['opening_time'] . ' - ' . $settings['closing_time']); ?></div>
                     </div>
                 </div>
-                <div class="settings-item">
-                    <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="col-lg-5 px-5 text-end">
+                <div class="h-100 d-inline-flex align-items-center py-3 me-4">
+                    <small class="fa fa-phone-alt text-primary me-2"></small>
                     <div class="settings-content">
-                        <div class="settings-label">Days of Operation</div>
-                        <div class="settings-value"><?php echo htmlspecialchars($operation_days_text); ?></div>
-                    </div>
-                </div>
-                <div class="settings-item">
-                    <i class="fas fa-phone-alt"></i>
-                    <div class="settings-content">
-                        <div class="settings-label">Emergency Contact</div>
                         <div class="settings-value"><?php echo htmlspecialchars($settings['emergency_contact_number']); ?></div>
                     </div>
                 </div>
-                <?php if ($settings['maintenance_mode'] === '1'): ?>
-                    <div class="settings-item">
-                        <i class="fas fa-tools"></i>
-                        <div class="settings-content">
-                            <div class="settings-label">Maintenance Mode</div>
-                            <div class="settings-value">Enabled - <?php echo htmlspecialchars($settings['maintenance_message']); ?></div>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                <div class="h-100 d-inline-flex align-items-center">
+                    <a class="btn btn-sm-square rounded-circle bg-white text-primary me-1" href=""><i class="fab fa-facebook-f"></i></a>
+                    <a class="btn btn-sm-square rounded-circle bg-white text-primary me-1" href=""><i class="fab fa-twitter"></i></a>
+                    <a class="btn btn-sm-square rounded-circle bg-white text-primary me-1" href=""><i class="fab fa-linkedin-in"></i></a>
+                    <a class="btn btn-sm-square rounded-circle bg-white text-primary me-0" href=""><i class="fab fa-instagram"></i></a>
+                </div>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Topbar End -->
+
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top p-0 wow fadeIn" data-wow-delay="0.1s">
+        <a href="index.php" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+            <h1 class="m-0 text-primary"><i class="far fa-hospital me-3"></i>Medical Centre - University of Ruhuna</h1>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto p-4 p-lg-0">
+                <a href="index.php" class="nav-item nav-link active">Home</a>
+                <a href="about.php" class="nav-item nav-link">About</a>
+                <a href="health_resources.php" class="nav-item nav-link">Health Resources</a>
+                <a href="feature.php" class="nav-item nav-link">Opening Information</a>
+                <a href="contact.php" class="nav-item nav-link">Contact</a>
+                <button id="darkModeToggle" class="btn btn-primary rounded-circle ms-3" style="width: 40px; height: 40px;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <a href="login.php" class="btn btn-primary rounded-0 py-4 px-lg-5 d-none d-lg-block">LogIn/SignUp<i class="fa fa-arrow-right ms-3"></i></a>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Header Start -->
+    <div class="container-fluid header bg-primary p-0 mb-5">
+        <div class="row g-0 align-items-center flex-column-reverse flex-lg-row">
+            <div class="col-lg-6 p-5 wow fadeIn" data-wow-delay="0.1s">
+                <div style="display: flex; justify-content: center;">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/2/2e/University_of_Ruhuna_logo.png" alt="University of Ruhuna Logo" class="logo">
+                </div>
+                <h1 class="display-4 text-white mb-5">Good Health Is The Root Of All Happiness</h1>
+                <div class="row g-4">
+                    <div class="col-sm-4">
+                        <div class="border-start border-light ps-4">
+                            <h2 class="text-white mb-1" data-toggle="counter-up">10</h2>
+                            <p class="text-light mb-0">Expert Doctors</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="border-start border-light ps-4">
+                            <h2 class="text-white mb-1" data-toggle="counter-up">15</h2>
+                            <p class="text-light mb-0">Medical Staff</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="border-start border-light ps-4">
+                            <h2 class="text-white mb-1" data-toggle="counter-up">5000</h2>
+                            <p class="text-light mb-0">Total Patients</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
+                <div class="owl-carousel header-carousel">
+                    <div class="owl-carousel-item position-relative">
+                        <img class="img-fluid" src="img/carousel-1.jpg" alt="">
+                        <div class="owl-carousel-text">
+                            <h1 class="display-1 text-white mb-0">Expert Care</h1>
+                        </div>
+                    </div>
+                    <div class="owl-carousel-item position-relative">
+                        <img class="img-fluid" src="img/290d68e1-49f9-4164-ad3a-c16f5899ee32.jpg" alt="">
+                        <div class="owl-carousel-text">
+                            <h1 class="display-1 text-white mb-0">Pharmacy Services</h1>
+                        </div>
+                    </div>
+                    <div class="owl-carousel-item position-relative">
+                        <img class="img-fluid" src="img/f1192f4b-08f8-40bc-ab2f-b72fe898b003.jpg" alt="">
+                        <div class="owl-carousel-text">
+                            <h1 class="display-1 text-white mb-0">Emergency Medical Support</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- About Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
+                    <div class="d-flex flex-column">
+                        <img class="img-fluid rounded w-75 align-self-end" src="https://capage.eu/wp-content/uploads/2024/04/Ruhuna.jpg" alt="">
+                        <img class="img-fluid rounded w-50 bg-white pt-3 pe-3" src="https://www.newswire.lk/wp-content/uploads/2023/02/Ruhuna-University.jpg" alt="" style="margin-top: -25%;">
+                    </div>
+                </div>
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
+                    <p class="d-inline-block border rounded-pill py-1 px-4">About Us</p>
+                    <h1 class="mb-4">Get Know About Us!</h1>
+                    <p>The University of Ruhuna Medical Centre, established in 1985 at the Wellamadama complex in Matara, Sri Lanka, is a vital component of the university's commitment to the health and well-being of its students, staff, and the surrounding community. As part of the prestigious University of Ruhuna, the only university in Southern Sri Lanka, the Medical Centre provides comprehensive preventive and curative health services to support an active and healthy lifestyle.
+                    <a class="btn btn-primary rounded-pill py-3 px-5 mt-3" href="about.html">Read More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About End -->
+
+    <!-- Feature Start -->
+    <div class="container-fluid bg-primary overflow-hidden my-5 px-lg-0">
+        <div class="container feature px-lg-0">
+            <div class="row g-0 mx-lg-0">
+                <div class="col-lg-6 feature-text py-5 wow fadeIn" data-wow-delay="0.1s">
+                    <div class="p-lg-5 ps-lg-0">
+                        <p class="d-inline-block border rounded-pill text-light py-1 px-4">Features</p>
+                        <h1 class="text-white mb-4">Our Team</h1>
+                        <p class="text-white mb-4 pb-2">Our dedicated team of healthcare professionals includes experienced doctors, pharmacists, and administrative staff who work together to ensure the best care for our patients. We collaborate with the University of Ruhuna to integrate academic excellence with healthcare delivery.</p>
+                        <div class="row g-4">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center rounded-circle bg-light" style="width: 55px; height: 55px;">
+                                        <i class="fa fa-user-md text-primary"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-white mb-2">Experience</p>
+                                        <h5 class="text-white mb-0">Doctors</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center rounded-circle bg-light" style="width: 55px; height: 55px;">
+                                        <i class="fa fa-check text-primary"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-white mb-2">Quality</p>
+                                        <h5 class="text-white mb-0">Services</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center rounded-circle bg-light" style="width: 55px; height: 55px;">
+                                        <i class="fa fa-hospital text-primary"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-white mb-2">Best</p>
+                                        <h5 class="text-white mb-0">Medication</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center rounded-circle bg-light" style="width: 55px; height: 55px;">
+                                        <i class="fa fa-comment-medical text-primary"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-white mb-2">Positive</p>
+                                        <h5 class="text-white mb-0">Consultation</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center rounded-circle bg-light" style="width: 55px; height: 55px;">
+                                        <i class="fa fa-headphones text-primary"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-white mb-2">24 Hours</p>
+                                        <h5 class="text-white mb-0">Support</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 pe-lg-0 wow fadeIn" data-wow-delay="0.5s" style="min-height: 400px;">
+                    <div class="position-relative h-100">
+                        <img class="position-absolute img-fluid w-100 h-100" src="img/feature.jpg" style="object-fit: cover;" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Feature End -->
+
+    <!-- Testimonial Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                <p class="d-inline-block border rounded-pill py-1 px-4">Feedbacks</p>
+                <h1>What Say Our Patients!</h1>
+            </div>
+            <?php if ($error_message) { ?>
+                <div class="alert alert-warning"><?php echo htmlspecialchars($error_message); ?></div>
+            <?php } ?>
+            <div class="owl-carousel testimonial-carousel wow fadeInUp" data-wow-delay="0.1s">
+                <?php if (empty($feedbacks)) { ?>
+                    <div class="testimonial-item text-center">
+                        <div class="testimonial-text rounded text-center p-4">
+                            <p>No feedback submitted yet.</p>
+                            <h5 class="mb-1">Unknown</h5>
+                            <span class="fst-italic">Faculty</span>
+                        </div>
+                    </div>
+                <?php } else { ?>
+                    <?php foreach ($feedbacks as $index => $feedback) { ?>
+                        <div class="testimonial-item text-center">
+                            <div class="testimonial-text rounded text-center p-4">
+                                <p><?php echo htmlspecialchars($feedback['feedback_text']); ?></p>
+                                <h5 class="mb-1"><?php echo htmlspecialchars($feedback['Faculty'] ?? 'Unknown'); ?></h5>
+                                <span class="fst-italic"><?php echo htmlspecialchars($feedback['submit_date']); ?></span>
+                            </div>
+                        </div>
+                    <?php } ?>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+    <!-- Testimonial End -->
+
+    <!-- Footer Start -->
+    <div class="container-fluid bg-dark text-light footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="text-light mb-4">Address</h5>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>University of Ruhuna, Matara, Sri Lanka</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+94 41 2222681</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>medicalcentre@ruh.ac.lk</p>
+                    <div class="d-flex pt-2">
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-youtube"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="text-light mb-4">Quick Links</h5>
+                    <a class="btn btn-link" href="login.php">LogIn</a>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="health_resources.php">Health Resources</a>
+                    <a class="btn btn-link" href="feature.php">Opening Information</a>
+                    <a class="btn btn-link" href="contact.html">Contact Us</a>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="copyright">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        © <a class="border-bottom" href="#">Medical Centre-UOR</a>, All Right Reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/counterup/counterup.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+
+    <!-- Dark Mode Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.documentElement;
+
+            // Check for saved preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                if (body.classList.contains('dark-mode')) {
+                    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        });
+    </script>
+
+    <!-- Owl Carousel Initialization for Testimonial Section -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.testimonial-carousel').owlCarousel({
+                loop: true,
+                margin: 10,
+                nav: true,
+                navText: [
+                    '<i class="fa fa-chevron-left"></i>',
+                    '<i class="fa fa-chevron-right"></i>'
+                ],
+                dots: false,
+                responsive: {
+                    0: {
+                        items: 1
+                    },
+                    600: {
+                        items: 1
+                    },
+                    1000: {
+                        items: 1
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
