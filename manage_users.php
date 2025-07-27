@@ -72,572 +72,531 @@ $pharmacists = $conn->query("SELECT * FROM pharmacists")->fetch_all(MYSQLI_ASSOC
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users - University Medical Centre</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Manage Users - University of Ruhuna Medical Centre</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="../img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet"> 
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="../lib/animate/animate.min.css" rel="stylesheet">
+    <link href="../lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="../lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="../css/style.css" rel="stylesheet">
+
+    <!-- Inline CSS for Specific Enhancements and Dark Mode -->
     <style>
+        /* Color Variables */
         :root {
-            --primary: #7c3aed;
-            --secondary: #ec4899;
-            --accent: #06b6d4;
-            --text: #1e293b;
-            --background: #f1f5f9;
-            --success: #10b981;
-            --error: #ef4444;
+            --primary: rgb(86, 85, 183);
+            --secondary: #ec4899; /* Pink */
+            --accent: #06b6d4; /* Cyan */
+            --success: #10b981; /* Green */
+            --error: #ef4444; /* Red */
+            --background: #ffffff;
+            --text: #000000;
+            --light-bg: #f8f9fa;
+            --dark-bg: rgb(8, 50, 92);
+            --text-light: #ffffff;
         }
 
-        * {
-            box-sizing: border-box;
+        .dark-mode {
+            --background: #1a1a1a;
+            --text: #e0e0e0;
+            --light-bg: #2c2c2c;
+            --dark-bg: rgb(56, 41, 150);
+            --text-light: #e0e0e0;
         }
 
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #a5b4fc, rgb(198, 168, 249), #22d3ee);
-            position: relative;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://media.istockphoto.com/id/1440001176/photo/administrator-with-medical-team.jpg?s=612x612&w=0&k=20&c=TwUTSZTb1HCu9J8r8hVEEInXKf1-GvIVsUhtlNYEho4=');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: cover;
-            opacity: 0.1;
-            z-index: -1;
-            animation: zoomInOut 20s ease-in-out infinite;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at top center, rgba(255, 255, 255, 0.35), transparent 60%);
-            z-index: -1;
-        }
-
-        .container {
-            margin-top: 80px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 1;
-        }
-
+        /* Original Styles Preserved */
+        /* Card Hover Effect */
         .card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.95));
-            border-radius: 20px;
-            box-shadow: 0 12px 50px rgba(0, 50, 120, 0.15), 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 0.7s ease-out;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 60px rgba(0, 50, 120, 0.2), 0 6px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(124, 58, 237, 0.1), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: -1;
-        }
-
-        .card:hover::before {
-            opacity: 0.3;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .card-header h2 {
-            font-family: 'Rubik', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 700;
-            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin: 0;
-            animation: textPop 1.5s ease-in-out infinite alternate;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-title {
-            font-family: 'Rubik', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 600;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .section-title i {
-            margin-right: 10px;
-            color: var(--accent);
-        }
-
-        .table {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .table thead {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .table th, .table td {
-            padding: 15px;
-            vertical-align: middle;
-        }
-
-        .table tbody tr {
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .table tbody tr:hover {
-            background: var(--background);
-            transform: translateX(5px);
-        }
-
-        .btn-primary {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        /* Button Hover Effect */
+        .btn-primary, .btn-danger, .btn-secondary {
             position: relative;
             overflow: hidden;
         }
 
-        .btn-primary::before {
+        .btn-primary::before, .btn-danger::before, .btn-secondary::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.4s ease;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(90deg, #6d28d9, #db2777);
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-        }
-
-        .btn-primary:hover::before {
+        .btn-primary:hover::before, .btn-danger:hover::before, .btn-secondary:hover::before {
             left: 100%;
         }
 
-        .btn-primary:active {
-            transform: scale(1);
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(90deg, var(--text), #4b5563);
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-secondary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.4s ease;
-        }
-
-        .btn-secondary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(30, 41, 59, 0.5);
-        }
-
-        .btn-secondary:hover::before {
-            left: 100%;
-        }
-
-        .btn-danger {
-            background: linear-gradient(90deg, var(--error), #b91c1c);
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-weight: 500;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-danger::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.4s ease;
-        }
-
-        .btn-danger:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-        }
-
-        .btn-danger:hover::before {
-            left: 100%;
-        }
-
+        /* Modal Animation */
         .modal-content {
-            border-radius: 16px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.95));
-            box-shadow: 0 12px 40px rgba(0, 50, 120, 0.2);
-            animation: fadeInUp 0.5s ease-out;
+            animation: zoomIn 0.4s ease;
         }
 
-        .modal-header {
-            border-bottom: none;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
+        /* Custom Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            50% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .modal-title {
-            font-weight: 600;
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .modal-body {
-            padding: 20px;
+        /* Page Header Background */
+        .page-header {
+            background-image: url('https://www.hamburg-port-authority.de/fileadmin/user_upload/karriere/2025_Startseite/Header/240925_HPA_web_v2-26_1917x635.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
         }
 
-        .form-label {
-            font-weight: 500;
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(192, 169, 232, 0.5), rgba(207, 139, 173, 0.5));
+            z-index: 1;
+        }
+
+        .page-header .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .page-header h1, .page-header .breadcrumb-item a, .page-header .breadcrumb-item {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Dark Mode Styles */
+        body {
+            background-color: var(--background);
             color: var(--text);
         }
 
-        .form-control, .form-control:focus {
-            border-radius: 8px;
-            border: 1px solid #d1d9e6;
-            background: #f8fafc;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        .bg-light {
+            background-color: var(--light-bg) !important;
         }
 
-        .form-control:focus {
+        .bg-dark {
+            background-color: var(--dark-bg) !important;
+        }
+
+        .text-light {
+            color: var(--text-light) !important;
+        }
+
+        .text-primary {
+            color: var(--primary) !important;
+        }
+
+        .navbar.bg-white {
+            background-color: var(--background) !important;
+        }
+
+        .navbar-light .navbar-nav .nav-link {
+            color: var(--text);
+        }
+
+        .dark-mode .card {
+            background-color: var(--light-bg);
+            color: var(--text);
+        }
+
+        .dark-mode .form-control {
+            background-color: var(--light-bg);
+            color: var(--text);
+            border-color: var(--text-light);
+        }
+
+        .dark-mode .form-floating > label {
+            color: var(--text-light);
+        }
+
+        .dark-mode .modal-content {
+            background-color: var(--light-bg);
+            color: var(--text);
+        }
+
+        .dark-mode .btn.btn-outline-light.btn-social {
+            background-color: var(--light-bg);
+            color: var(--text-light);
+        }
+
+        .dark-mode .btn.btn-primary {
+            background-color: var(--primary);
             border-color: var(--primary);
-            box-shadow: 0 0 8px rgba(124, 58, 237, 0.2);
+            color: var(--text-light);
         }
 
-        .modal-footer {
-            border-top: none;
-            padding: 15px 20px;
+        .dark-mode .btn.btn-danger {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: var(--text-light);
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .dark-mode .btn.btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--text-light);
         }
 
-        @keyframes gentleDrift {
-            0% { background-position: 0 0; }
-            100% { background-position: 250px 250px; }
+        .dark-mode .border {
+            border-color: var(--text-light) !important;
         }
 
-        @keyframes textPop {
-            from { transform: scale(1); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-            to { transform: scale(1.02); text-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); }
+        .dark-mode .alert {
+            color: var(--text-light);
+            background-color: var(--light-bg);
+            border-color: var(--text-light);
         }
 
-        @media (max-width: 992px) {
-            .container {
-                max-width: 100%;
-                padding: 0 15px;
-            }
-            .card {
-                padding: 30px;
-            }
-            .table th, .table td {
-                padding: 10px;
-            }
+        .dark-mode .list-group-item {
+            background-color: var(--light-bg);
+            color: var(--text);
         }
 
-        @media (max-width: 768px) {
-            .container {
-                margin-top: 60px;
-            }
-            .card {
-                border-radius: 16px;
-            }
-            .card-header h2 {
-                font-size: 2rem;
-            }
-            .table {
-                font-size: 0.9rem;
-            }
-            .btn-primary, .btn-secondary, .btn-danger {
-                padding: 8px 15px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .container {
-                margin-top: 40px;
-            }
-            .card {
-                padding: 20px;
-                border-radius: 12px;
-            }
-            .card-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .card-header h2 {
-                font-size: 1.8rem;
-            }
-            .table-responsive {
-                border-radius: 8px;
-            }
-            .modal-dialog {
-                margin: 10px;
-            }
+        #darkModeToggle i {
+            font-size: 1.2rem;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <h2>Manage Users</h2>
-                <a href="admin_dashboard.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
-            </div>
-            
-            <!-- Patients Section -->
-            <h6 class="section-title"><i class="fas fa-user-injured"></i>Patients</h6>
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="setAddForm('patients')"><i class="fas fa-plus"></i> Add Patient</button>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Contact</th>
-                            <th>DOB</th>
-                            <th>Age</th>
-                            <th>Gender</th>
-                            <th>Blood Type</th>
-                            <th>Academic Year</th>
-                            <th>Faculty</th>
-                            <th>Citizenship</th>
-                            <th>Allergies</th>
-                            <th>Emergency Contact</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($patients as $patient): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($patient['Fullname']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Email']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Contact_No']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Birth']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Age']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Gender']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Blood_Type']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Academic_Year']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Faculty']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Citizenship']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Any_allergies']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['Emergency_Contact']); ?></td>
-                                <td>
-                                    <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="table" value="patients">
-                                        <input type="hidden" name="user_id" value="<?php echo $patient['UserID']; ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Doctors Section -->
-            <h6 class="section-title"><i class="fas fa-user-md"></i>Doctors</h6>
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="setAddForm('doctors')"><i class="fas fa-plus"></i> Add Doctor</button>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Contact</th>
-                            <th>Specialization</th>
-                            <th>Registration No</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($doctors as $doctor): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($doctor['Fullname']); ?></td>
-                                <td><?php echo htmlspecialchars($doctor['Email']); ?></td>
-                                <td><?php echo htmlspecialchars($doctor['Contact_No']); ?></td>
-                                <td><?php echo htmlspecialchars($doctor['Specialization']); ?></td>
-                                <td><?php echo htmlspecialchars($doctor['RegNo']); ?></td>
-                                <td>
-                                    <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="table" value="doctors">
-                                        <input type="hidden" name="user_id" value="<?php echo $doctor['UserID']; ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pharmacists Section -->
-            <h6 class="section-title"><i class="fas fa-prescription-bottle-alt"></i>Pharmacists</h6>
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="setAddForm('pharmacists')"><i class="fas fa-plus"></i> Add Pharmacist</button>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Contact</th>
-                            <th>License No</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($pharmacists as $pharmacist): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($pharmacist['Fullname']); ?></td>
-                                <td><?php echo htmlspecialchars($pharmacist['Email']); ?></td>
-                                <td><?php echo htmlspecialchars($pharmacist['Contact_No']); ?></td>
-                                <td><?php echo htmlspecialchars($pharmacist['License_No']); ?></td>
-                                <td>
-                                    <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="table" value="pharmacists">
-                                        <input type="hidden" name="user_id" value="<?php echo $pharmacist['UserID']; ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <a href="logout.php" class="btn btn-danger mt-4"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
         </div>
     </div>
+    <!-- Spinner End -->
+
     
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top p-0 wow fadeIn" data-wow-delay="0.1s">
+        <a href="../index.php" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+            <h1 class="m-0 text-primary"><i class="far fa-hospital me-3"></i>Medical Centre - University of Ruhuna</h1>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto p-4 p-lg-0">
+                <a href="index.php" class="nav-item nav-link">Home</a>
+                <a href="about.html" class="nav-item nav-link">About</a>
+                <a href="health_resources.php" class="nav-item nav-link">Health Resources</a>
+                <a href="feature.php" class="nav-item nav-link">Opening Information</a>
+                <a href="../contact.php" class="nav-item nav-link">Contact</a>
+                <button id="darkModeToggle" class="btn btn-primary rounded-circle ms-3" style="width: 40px; height: 40px;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <a href="../login.php" class="btn btn-danger rounded-0 py-4 px-lg-5 d-none d-lg-block">Logout<i class="fa fa-arrow-right ms-3"></i></a>
+        </div>    
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header py-5 mb-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <h1 class="display-3 text-white mb-3 animated slideInDown">Manage Users</h1>
+            <nav aria-label="breadcrumb animated slideInDown">
+               
+            </nav>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Manage Users Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                <p class="d-inline-block border rounded-pill py-1 px-4 text-primary">Admin Portal</p>
+                <h1 class="text-primary">Manage Users</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body">
+                            <div class="card-header d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="text-primary">User Management</h3>
+                                <a href="admin_dashboard.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                            </div>
+                            
+                            <!-- Patients Section -->
+                            <h5 class="mb-3 text-primary"><i class="fas fa-user-injured me-2"></i>Patients</h5>
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="setAddForm('patients')"><i class="fas fa-plus me-2"></i>Add Patient</button>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Contact</th>
+                                            <th>DOB</th>
+                                            <th>Age</th>
+                                            <th>Gender</th>
+                                            <th>Blood Type</th>
+                                            <th>Academic Year</th>
+                                            <th>Faculty</th>
+                                            <th>Citizenship</th>
+                                            <th>Allergies</th>
+                                            <th>Emergency Contact</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($patients as $patient): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($patient['Fullname']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Email']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Contact_No']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Birth']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Age']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Gender']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Blood_Type']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Academic_Year']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Faculty']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Citizenship']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Any_allergies']); ?></td>
+                                                <td><?php echo htmlspecialchars($patient['Emergency_Contact']); ?></td>
+                                                <td>
+                                                    <form method="POST" style="display:inline;">
+                                                        <input type="hidden" name="action" value="delete">
+                                                        <input type="hidden" name="table" value="patients">
+                                                        <input type="hidden" name="user_id" value="<?php echo $patient['UserID']; ?>">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Doctors Section -->
+                            <h5 class="mb-3 text-primary"><i class="fas fa-user-md me-2"></i>Doctors</h5>
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="setAddForm('doctors')"><i class="fas fa-plus me-2"></i>Add Doctor</button>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Contact</th>
+                                            <th>Specialization</th>
+                                            <th>Registration No</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($doctors as $doctor): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($doctor['Fullname']); ?></td>
+                                                <td><?php echo htmlspecialchars($doctor['Email']); ?></td>
+                                                <td><?php echo htmlspecialchars($doctor['Contact_No']); ?></td>
+                                                <td><?php echo htmlspecialchars($doctor['Specialization']); ?></td>
+                                                <td><?php echo htmlspecialchars($doctor['RegNo']); ?></td>
+                                                <td>
+                                                    <form method="POST" style="display:inline;">
+                                                        <input type="hidden" name="action" value="delete">
+                                                        <input type="hidden" name="table" value="doctors">
+                                                        <input type="hidden" name="user_id" value="<?php echo $doctor['UserID']; ?>">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pharmacists Section -->
+                            <h5 class="mb-3 text-primary"><i class="fas fa-prescription-bottle-alt me-2"></i>Pharmacists</h5>
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="setAddForm('pharmacists')"><i class="fas fa-plus me-2"></i>Add Pharmacist</button>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Contact</th>
+                                            <th>License No</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($pharmacists as $pharmacist): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($pharmacist['Fullname']); ?></td>
+                                                <td><?php echo htmlspecialchars($pharmacist['Email']); ?></td>
+                                                <td><?php echo htmlspecialchars($pharmacist['Contact_No']); ?></td>
+                                                <td><?php echo htmlspecialchars($pharmacist['License_No']); ?></td>
+                                                <td>
+                                                    <form method="POST" style="display:inline;">
+                                                        <input type="hidden" name="action" value="delete">
+                                                        <input type="hidden" name="table" value="pharmacists">
+                                                        <input type="hidden" name="user_id" value="<?php echo $pharmacist['UserID']; ?>">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Manage Users End -->
+
     <!-- Add User Modal -->
-    <div class="modal fade" id="addModal" tabindex="-1">
-        <div class="modal-dialog">
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-primary" id="addModalLabel">Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
                         <input type="hidden" name="action" value="add">
                         <input type="hidden" name="table" id="modalTable">
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fas fa-user me-2"></i>Full Name</label>
+                        <div class="form-floating mb-3">
                             <input type="text" class="form-control" name="fullname" required>
+                            <label for="fullname"><i class="fas fa-user me-2"></i>Full Name</label>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fas fa-envelope me-2"></i>Email</label>
+                        <div class="form-floating mb-3">
                             <input type="email" class="form-control" name="email" required>
+                            <label for="email"><i class="fas fa-envelope me-2"></i>Email Address</label>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fas fa-phone me-2"></i>Contact No</label>
+                        <div class="form-floating mb-3">
                             <input type="text" class="form-control" name="contact">
+                            <label for="contact"><i class="fas fa-phone me-2"></i>Contact Number</label>
                         </div>
-                        <div class="mb-3" id="dobField" style="display:none;">
-                            <label class="form-label"><i class="fas fa-calendar-alt me-2"></i>Date of Birth</label>
+                        <div class="form-floating mb-3" id="dobField" style="display:none;">
                             <input type="date" class="form-control" name="dob">
+                            <label for="dob"><i class="fas fa-calendar-alt me-2"></i>Date of Birth</label>
                         </div>
-                        <div class="mb-3" id="addressField" style="display:none;">
-                            <label class="form-label"><i class="fas fa-map-marker-alt me-2"></i>Address</label>
+                        <div class="form-floating mb-3" id="addressField" style="display:none;">
                             <textarea class="form-control" name="address"></textarea>
+                            <label for="address"><i class="fas fa-map-marker-alt me-2"></i>Address</label>
                         </div>
-                        <div class="mb-3" id="specializationField" style="display:none;">
-                            <label class="form-label"><i class="fas fa-stethoscope me-2"></i>Specialization</label>
+                        <div class="form-floating mb-3" id="specializationField" style="display:none;">
                             <input type="text" class="form-control" name="specialization">
+                            <label for="specialization"><i class="fas fa-stethoscope me-2"></i>Specialization</label>
                         </div>
-                        <div class="mb-3" id="licenseField" style="display:none;">
-                            <label class="form-label"><i class="fas fa-id-card me-2"></i>License No</label>
+                        <div class="form-floating mb-3" id="licenseField" style="display:none;">
                             <input type="text" class="form-control" name="license_no">
+                            <label for="license_no"><i class="fas fa-id-card me-2"></i>License No</label>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Add User</button>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add User</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Footer Start -->
+    <div class="container-fluid bg-dark text-light footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="text-light mb-4">Address</h5>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>University of Ruhuna, Matara, Sri Lanka</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+94 41 2222681</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>medicalcentre@ruh.ac.lk</p>
+                    <div class="d-flex pt-2">
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-youtube"></i></a>
+                        <a class="btn btn-outline-light btn-social rounded-circle" href=""><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                 <div class="col-lg-3 col-md-6">
+                    <h5 class="text-light mb-4">Quick Links</h5>
+                    <a class="btn btn-link" href="login.php">LogIn</a>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="health_resources.php">Health Resources</a>
+                    <a class="btn btn-link" href="feature.php">Opening Information</a>
+                    <a class="btn btn-link" href="contact.html">Contact Us</a>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="copyright">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        © <a class="border-bottom" href="#">Medical Centre-UOR</a>, All Right Reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../lib/wow/wow.min.js"></script>
+    <script src="../lib/easing/easing.min.js"></script>
+    <script src="../lib/waypoints/waypoints.min.js"></script>
+    <script src="../lib/counterup/counterup.min.js"></script>
+    <script src="../lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="../lib/tempusdominus/js/moment.min.js"></script>
+    <script src="../lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="../lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="../js/main.js"></script>
     <script>
         function setAddForm(table) {
             document.getElementById('modalTable').value = table;
@@ -647,6 +606,29 @@ $pharmacists = $conn->query("SELECT * FROM pharmacists")->fetch_all(MYSQLI_ASSOC
             document.getElementById('licenseField').style.display = table === 'doctors' || table === 'pharmacists' ? 'block' : 'none';
             document.querySelector('.modal-title').textContent = 'Add ' + table.charAt(0).toUpperCase() + table.slice(1, -1);
         }
+
+        // Dark Mode Toggle Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.documentElement;
+
+            // Check for saved preference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                if (body.classList.contains('dark-mode')) {
+                    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        });
     </script>
 </body>
 </html>
