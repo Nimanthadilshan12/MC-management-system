@@ -337,6 +337,13 @@ if (isset($_POST['signin'])) {
         #darkModeToggle i {
             font-size: 1.2rem;
         }
+
+        .email-error {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
     </style>
     <script>
         function showForm(form) {
@@ -359,12 +366,22 @@ if (isset($_POST['signin'])) {
             showForm('<?php echo $showForm; ?>');
             const roleSelect = document.getElementById('roleSelect');
             if (roleSelect) toggleRoleFields(roleSelect.value);
+
+            // Email validation on input
+            const emailInput = document.getElementById('Email');
+            const emailError = document.getElementById('emailError');
+            emailInput.addEventListener('input', function() {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailInput.value)) {
+                    emailError.style.display = 'block';
+                } else {
+                    emailError.style.display = 'none';
+                }
+            });
         };
     </script>
 </head>
 <body>
-   
-
    
         <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top p-0 wow fadeIn" data-wow-delay="0.1s">
@@ -417,7 +434,6 @@ if (isset($_POST['signin'])) {
                 </div>
             </div>
 
-            
             <div class="container">
                 <?php if ($message): ?>
                     <div class="message <?php echo strpos($message, 'successful') !== false ? 'success' : ''; ?>">
@@ -432,7 +448,6 @@ if (isset($_POST['signin'])) {
                    <input type="text" name="UserID" id="UserID" class="form-control" placeholder="Enter User ID" required>
                    <label for="UserID"><i class="fas fa-id-badge me-2"></i>User ID</label>
                     <div class="rule-message">For Patients: Must start with 'sc' or 'R' followed by 5 digits (e.g., sc12345). For others: 3-50 characters.</div>
-
                  </div>
                 </div>
                 <div class="col-12">
@@ -467,6 +482,7 @@ if (isset($_POST['signin'])) {
                         <input type="email" name="Email" id="Email" class="form-control" placeholder="Enter Email" required>
                         <label for="Email"><i class="fas fa-envelope me-2"></i>Email Address</label>
                         <div class="rule-message">Must be a valid email format (e.g., example@domain.com).</div>
+                        <div id="emailError" class="email-error">Please enter a valid email address (e.g., example@domain.com).</div>
                     </div>
                 </div>
                 <div class="col-12">
@@ -522,9 +538,15 @@ if (isset($_POST['signin'])) {
                 </div>
                 <div class="col-12">
                     <div class="form-floating">
-                        <input type="text" name="Academic_Year" id="Academic_Year" class="form-control" placeholder="Enter Academic Year">
+                        <select name="Academic_Year" id="Academic_Year" class="form-control">
+                            <option value="">Select Academic Year</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                        </select>
                         <label for="Academic_Year"><i class="fas fa-graduation-cap me-2"></i>Academic Year</label>
-                        <div class="rule-message">Enter your academic year.</div>
+                        <div class="rule-message">Select your academic year.</div>
                     </div>
                 </div>
                 <div class="col-12">
@@ -625,7 +647,6 @@ if (isset($_POST['signin'])) {
 </div>
     <!-- Login & Register End -->
 
-
     <!-- Footer Start -->
     <div class="container-fluid bg-dark text-light footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
         <div class="container py-5">
@@ -703,6 +724,18 @@ if (isset($_POST['signin'])) {
             showForm('<?php echo $showForm; ?>');
             const roleSelect = document.getElementById('roleSelect');
             if (roleSelect) toggleRoleFields(roleSelect.value);
+
+            // Email validation on input
+            const emailInput = document.getElementById('Email');
+            const emailError = document.getElementById('emailError');
+            emailInput.addEventListener('input', function() {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailInput.value)) {
+                    emailError.style.display = 'block';
+                } else {
+                    emailError.style.display = 'none';
+                }
+            });
         };
 
         // Dark Mode Toggle Script
