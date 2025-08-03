@@ -36,7 +36,23 @@ $user = $result->fetch_assoc();
 if (!$user) {
     die("No user found with UserID: " . htmlspecialchars($UserID));
 }
-$stmt->close();
+
+// Fetch patient's appointments
+$appointments = [];
+if ($role === 'Patient') {
+    $stmt = $conn->prepare("SELECT a.id, a.appointment_date, a.status, d.Fullname AS doctor_name 
+                            FROM appointments a 
+                            JOIN doctors d ON a.doctor_id = d.UserID 
+                            WHERE a.patient_id = ? 
+                            ORDER BY a.appointment_date DESC");
+    if ($stmt) {
+        $stmt->bind_param("s", $UserID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $appointments = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    }
+}
 $conn->close();
 ?>
 
@@ -50,7 +66,6 @@ $conn->close();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables for Theming */
         :root {
             --bg-color: #e0e7ff;
             --text-color: #1a3556;
@@ -73,7 +88,6 @@ $conn->close();
             --header-bg: #2c3e50;
         }
 
-        /* Global Styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -106,7 +120,6 @@ $conn->close();
             animation: gentleDrift 25s linear infinite;
         }
 
-        /* Header Styles */
         .header {
             position: fixed;
             top: 0;
@@ -169,7 +182,6 @@ $conn->close();
             color: #c82333;
         }
 
-        /* Sidebar Toggle Button */
         .sidebar-toggle {
             position: fixed;
             top: 10px;
@@ -188,7 +200,6 @@ $conn->close();
             background: var(--secondary-color);
         }
 
-        /* Sidebar Styles */
         .sidebar {
             position: fixed;
             top: 60px;
@@ -235,7 +246,6 @@ $conn->close();
             margin-right: 10px;
         }
 
-        /* Main Content Styles */
         .main-content {
             margin-left: 250px;
             padding: 40px 20px;
@@ -251,7 +261,6 @@ $conn->close();
             margin: 0 auto;
         }
 
-        /* Card Styles */
         .card {
             background: var(--card-bg);
             border-radius: 20px;
@@ -394,7 +403,41 @@ $conn->close();
             font-weight: 400;
         }
 
-        /* Animations */
+        /* Appointment Card Styles */
+        .appointment-card {
+            margin-top: 20px;
+        }
+
+        .appointment-card .card-header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .appointment-list .alert {
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .appointment-list .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .appointment-list .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .appointment-list .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -411,7 +454,6 @@ $conn->close();
             100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
         }
 
-        /* Responsive Adjustments */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -485,9 +527,10 @@ $conn->close();
         <ul>
             <li><a href="patient_history.php?edit=<?php echo $role === 'Doctor' ? 'true' : 'false'; ?>"><i class="fas fa-history"></i> Patient History</a></li>
             <?php if ($role === 'Patient') { ?>
-                <li><a href="view_prescription.php"><i class="fas fa-prescription-bottle-alt"></i> View Prescription</a></li>
+                <li><a href="view_prescriptions.php"><i class="fas fa-prescription-bottle-alt"></i> View Prescription</a></li>
                 <li><a href="edit_patient_details.php"><i class="fas fa-edit"></i> Edit Details</a></li>
                 <li><a href="submit_feedback.php"><i class="fas fa-comment-dots"></i> Submit Feedback</a></li>
+                <li><a href="form_details.php"><i class="fas fa-file-alt"></i> Medical Form Details</a></li>
             <?php } ?>
             <li><a href="book_appointment.php"><i class="fas fa-calendar-plus"></i> Book Appointment</a></li>
         </ul>
@@ -511,34 +554,34 @@ $conn->close();
                             <div class="info-item">
                                 <i class="fas fa-birthday-cake icon"></i>
                                 <span class="label">Date of Birth:</span>
-                                <span class="value"><?php echo htmlspecialchars($user['Birth']); ?></span>
+                                <span class="value"><?php echo htmlspecialchars($user['Birth'] ?? 'N/A'); ?></span>
                             </div>
                             <div class="info-item">
                                 <i class="fas fa-tint icon"></i>
                                 <span class="label">Blood Group:</span>
-                                <span class="value"><?php echo htmlspecialchars($user['Blood_Type']); ?></span>
+                                <span class="value"><?php echo htmlspecialchars($user['Blood_Type'] ?? 'N/A'); ?></span>
                             </div>
                             <div class="info-item">
                                 <i class="fas fa-venus-mars icon"></i>
                                 <span class="label">Gender:</span>
-                                <span class="value"><?php echo htmlspecialchars($user['Gender']); ?></span>
+                                <span class="value"><?php echo htmlspecialchars($user['Gender'] ?? 'N/A'); ?></span>
                             </div>
                         <?php } else { ?>
                             <div class="info-item">
                                 <i class="fas fa-stethoscope icon"></i>
                                 <span class="label">Specialization:</span>
-                                <span class="value"><?php echo htmlspecialchars($user['Specialization']); ?></span>
+                                <span class="value"><?php echo htmlspecialchars($user['Specialization'] ?? 'N/A'); ?></span>
                             </div>
                             <div class="info-item">
                                 <i class="fas fa-id-badge icon"></i>
                                 <span class="label">Reg No:</span>
-                                <span class="value"><?php echo htmlspecialchars($user['RegNo']); ?></span>
+                                <span class="value"><?php echo htmlspecialchars($user['RegNo'] ?? 'N/A'); ?></span>
                             </div>
                         <?php } ?>
                         <div class="info-item">
                             <i class="fas fa-phone icon"></i>
                             <span class="label">Contact:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['Contact_No']); ?></span>
+                            <span class="value"><?php echo htmlspecialchars($user['Contact_No'] ?? 'N/A'); ?></span>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-user icon"></i>
@@ -548,10 +591,38 @@ $conn->close();
                         <div class="info-item">
                             <i class="fas fa-envelope icon"></i>
                             <span class="label">Email:</span>
-                            <span class="value"><?php echo htmlspecialchars($user['Email']); ?></span>
+                            <span class="value"><?php echo htmlspecialchars($user['Email'] ?? 'N/A'); ?></span>
                         </div>
                     </div>
                 </div>
+                <?php if ($role === 'Patient' && !empty($appointments)) { ?>
+                    <div class="card appointment-card">
+                        <div class="card-header">
+                            <h3>Your Appointments</h3>
+                        </div>
+                        <div class="card-body appointment-list">
+                            <?php foreach ($appointments as $appointment) { ?>
+                                <div class="alert alert-<?php echo $appointment['status'] === 'Approved' ? 'success' : ($appointment['status'] === 'Declined' ? 'danger' : 'warning'); ?> d-flex align-items-center" role="alert">
+                                    <i class="fas <?php echo $appointment['status'] === 'Approved' ? 'fa-check-circle' : ($appointment['status'] === 'Declined' ? 'fa-times-circle' : 'fa-clock'); ?> me-2"></i>
+                                    <div>
+                                        Appointment with Dr. <?php echo htmlspecialchars($appointment['doctor_name']); ?> on <?php echo date('F j, Y, g:i A', strtotime($appointment['appointment_date'])); ?> is 
+                                        <strong><?php echo htmlspecialchars($appointment['status']); ?></strong>.
+                                    </div>
+                                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                <?php } elseif ($role === 'Patient') { ?>
+                    <div class="card appointment-card">
+                        <div class="card-header">
+                            <h3>Your Appointments</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">No appointments found. <a href="book_appointment.php">Book an appointment now</a>.</p>
+                        </div>
+                    </div>
+                <?php } ?>
             </div>
         </div>
     </div>
