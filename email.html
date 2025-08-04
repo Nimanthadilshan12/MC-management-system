@@ -314,6 +314,107 @@
                     });
             });
         });
+        document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('emergencyForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitLoader = document.getElementById('submitLoader');
+    const statusMessage = document.getElementById('statusMessage');
+    const prioritySelect = document.getElementById('patientPriority');
+    const priorityIndicator = document.getElementById('priorityIndicator');
+
+    // Update priority indicator color
+    prioritySelect.addEventListener('change', function() {
+        const priority = this.value;
+        priorityIndicator.className = 'priority-indicator ' + priority.toLowerCase();
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        // Show loading state
+        submitText.style.display = 'none';
+        submitLoader.style.display = 'inline-block';
+        submitBtn.disabled = true;
+
+        // Prepare data to send to your backend
+        const formData = {
+            doctor_name: form.doctorName.value,
+            doctor_email: form.doctorEmail.value,
+            patient_name: form.patientName.value,
+            patient_age: form.patientAge.value,
+            patient_condition: form.patientCondition.value,
+            patient_priority: form.patientPriority.value,
+            hospital_email: form.hospitalEmail.value,
+            timestamp: new Date().toLocaleString() // Current timestamp
+        };
+
+        // --- Send data to your PHP backend script using fetch API ---
+        fetch('save_data.php', { // Path to your PHP script relative to the HTML file
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Tell the server we're sending JSON
+            },
+            body: JSON.stringify(formData), // Convert JavaScript object to JSON string
+        })
+        .then(response => {
+            // Check if the HTTP response was successful (status 2xx)
+            if (!response.ok) {
+                // If not successful, parse the error response as JSON and reject the promise
+                return response.json().then(errorData => Promise.reject(errorData));
+            }
+            return response.json(); // Parse the JSON response from PHP
+        })
+        .then(data => {
+            console.log('Backend response:', data); // Log the response from the PHP script
+
+            if (data.success) {
+                // Show success message based on backend response
+                statusMessage.textContent = 'Emergency notification sent and data saved! Hospital has been alerted.';
+                statusMessage.className = 'status success';
+                statusMessage.style.display = 'block';
+
+                // Reset form fields and priority indicator
+                form.reset();
+                priorityIndicator.className = 'priority-indicator';
+
+                // Optional: You can still send email via EmailJS here if desired
+                // This would run after successful database saving.
+                // emailjs.send('service_2mrwzxo', 'template_cnz9l3u', formData)
+                //     .then(function(response) {
+                //         console.log('EmailJS SUCCESS!', response.status, response.text);
+                //     }, function(error) {
+                //         console.log('EmailJS FAILED...', error);
+                //     });
+
+            } else {
+                // Show error message from backend if data.success is false
+                statusMessage.textContent = 'Failed to save data: ' + data.message;
+                statusMessage.className = 'status error';
+                statusMessage.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error or backend returned an error:', error);
+
+            // Show a generic error message or specific error from the catch block
+            statusMessage.textContent = 'An unexpected error occurred. Please try again. Error: ' + (error.message || JSON.stringify(error));
+            statusMessage.className = 'status error';
+            statusMessage.style.display = 'block';
+        })
+        .finally(() => {
+            // Always reset button state regardless of success or failure
+            submitText.style.display = 'block';
+            submitLoader.style.display = 'none';
+            submitBtn.disabled = false;
+
+            // Hide status message after 10 seconds
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 10000);
+        });
+    });
+});
     </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
