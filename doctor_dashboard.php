@@ -771,31 +771,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_userid'])) {
     <div class="sidebar" id="sidebar">
         <div class="p-3">
             <div class="d-flex align-items-center mb-3">
-                <div class="profile">
-                    <img id="profileImage" src="defult.png" alt="ProfilePhoto" class="profile-img me-3"><br>
-                    <input type="file" id="fileInput" class="upload-photo-input" accept="image/*" style="display:none">
-                    <button onclick="openFile()" id="editbutton">Edit Profile</button>
-                </div>
-                <script>
-                    function openFile() {
-                        document.getElementById('fileInput').click();
-                    }
-                    document.getElementById('fileInput').addEventListener('change', function(event) {
-                        const file = event.target.files[0];
-                        if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const dataUrl = e.target.result;
-                            document.getElementById('profileImage').src = dataUrl;
-                            localStorage.setItem('profileImage', dataUrl);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                    const saved = localStorage.getItem('profileImage');
-                    if (saved) {
-                        document.getElementById('profileImage').src = saved;
-                    }
-                </script>
+        
             </div>
         </div>
         <ul class="nav flex-column">
@@ -978,7 +954,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_userid'])) {
                                                     <i class="bi bi-file-earmark-text"></i> Patient History
                                                 </button>
                                             </a>
-                                            <a href="medical_form.php?patient_id=<?php echo urlencode($selected_patient['UserID']); ?>&patient_name=<?php echo urlencode($selected_patient['Fullname']); ?>">
+      <a href="medical_form.php?patient_id=<?php echo urlencode($selected_patient['UserID']); ?>&patient_name=<?php echo urlencode($selected_patient['Fullname']); ?>">
     <button class="btn btn-primary" id="patientMedicalBtn">
         <i class="bi bi-file-earmark-text"></i> Medical Report
     </button>
