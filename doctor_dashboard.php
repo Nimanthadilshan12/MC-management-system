@@ -791,7 +791,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_userid'])) {
     </a>
 </li>
             <li class="nav-item">
-                <a class="nav-link" href="email.html">
+                <a class="nav-link" href="email.php">
                     <i class="bi bi-envelope-exclamation"></i> Emergency Mail
                 </a>
             </li>
@@ -1526,3 +1526,4 @@ if (isset($_POST['active_tab'])) {
 }
 $conn->close();
 ?>
+
