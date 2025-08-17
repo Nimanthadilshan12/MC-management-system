@@ -1,3 +1,4 @@
+
 <?php
 // Database connection
 $servername = "localhost";
@@ -12,6 +13,33 @@ try {
     }
 } catch (Exception $e) {
     die("Connection error: " . $e->getMessage());
+}
+
+session_start();
+if (!isset($_SESSION['UserID']) || $_SESSION['role'] !== 'Doctor') {
+    header("Location: index.php");
+    exit;
+}
+
+// Fetch logged-in doctor's details
+$doctor_id = $_SESSION['UserID'];
+$sql = "SELECT Fullname, Email FROM doctors WHERE UserID = ?";
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    error_log("Prepare failed: " . $conn->error);
+    die("Database error: Failed to prepare query");
+}
+$stmt->bind_param("s", $doctor_id);
+if (!$stmt->execute()) {
+    error_log("Execute failed: " . $stmt->error);
+    die("Database error: Failed to execute query");
+}
+$result = $stmt->get_result();
+$doctor = $result->fetch_assoc();
+$stmt->close();
+if (!$doctor) {
+    error_log("No doctor found for UserID: " . $doctor_id);
+    die("No doctor record found for UserID: " . htmlspecialchars($doctor_id));
 }
 
 // Handle form submission
@@ -274,14 +302,14 @@ $conn->close();
         <div class="form-container">
             <form id="emergencyForm">
                 <div class="form-grid">
-                    <div class="form-group">
+                   <div class="form-group">
                         <label for="doctorName"><i class="fas fa-user-md"></i> Doctor Name</label>
-                        <input type="text" id="doctorName" name="doctorName" required placeholder="Dr. John Smith">
+                        <input type="text" id="doctorName" name="doctorName" required placeholder="Dr. John Smith" value="<?php echo htmlspecialchars($doctor['Fullname']); ?>" readonly>
                     </div>
                     
                     <div class="form-group">
                         <label for="doctorEmail"><i class="fas fa-envelope"></i> Your Email</label>
-                        <input type="email" id="doctorEmail" name="doctorEmail" required placeholder="your.email@example.com">
+                        <input type="email" id="doctorEmail" name="doctorEmail" required placeholder="your.email@example.com" value="<?php echo htmlspecialchars($doctor['Email']); ?>" readonly>
                     </div>
                 </div>
                 
